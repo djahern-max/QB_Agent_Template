@@ -42,7 +42,7 @@ class QuickBooksService:
         tokens = (
             self.db.query(QuickBooksTokens)
             .filter(
-                QuickBooksTokens.realm == realm_id
+                QuickBooksTokens.realm_id == realm_id
             )  # Changed from realm_id to realm
             .first()
         )
@@ -283,7 +283,7 @@ async def quickbooks_callback(
 
         try:
             quickbooks_tokens = QuickBooksTokens(
-                realm=realmId,
+                realm_id=realmId,  # Fixed
                 access_token=tokens["access_token"],
                 refresh_token=tokens["refresh_token"],
                 expires_at=expires_at,
@@ -291,7 +291,7 @@ async def quickbooks_callback(
 
             existing_tokens = (
                 db.query(QuickBooksTokens)
-                .filter(QuickBooksTokens.realm == realmId)
+                .filter(QuickBooksTokens.realm_id == realmId)
                 .first()
             )
 

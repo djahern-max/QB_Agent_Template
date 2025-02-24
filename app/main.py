@@ -4,8 +4,8 @@ from app.routers.financial import router as financial_router
 from typing import List, Dict
 
 app = FastAPI(
-    title="RYZE.ai Agents",
-    description="Financial analysis platform with AI capabilities and QuickBooks integration",
+    title="agent1 RYZE.ai Financial Analysis Agent",
+    description="AI-powered financial analysis with QuickBooks integration",
     version="1.0.0",
 )
 

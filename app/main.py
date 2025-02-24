@@ -1,8 +1,13 @@
-from fastapi import FastAPI, Header, UploadFile, File
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.services.quickbooks import router as quickbooks_router
+from app.routers.financial import router as financial_router
+from typing import List, Dict
 
-app = FastAPI(title="RYZE.ai Agents")
+app = FastAPI(
+    title="RYZE.ai Agents",
+    description="Financial analysis platform with AI capabilities and QuickBooks integration",
+    version="1.0.0",
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -12,20 +17,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount the QuickBooks router
-app.include_router(quickbooks_router, prefix="/api/v1", tags=["quickbooks"])
+# Single router mount
+app.include_router(financial_router, prefix="/api/v1", tags=["financial"])
 
 
-@app.post("/v1/analyze/financial")
-async def analyze_financial_document(
-    file: UploadFile = File(...), api_key: str = Header(..., convert_underscores=False)
-):
-    return {"message": "Analysis complete"}
+@app.get("/")
+async def root():
+    return {"name": "RYZE.ai API", "version": "1.0.0", "status": "operational"}
 
 
-# Remove the duplicate callback route since it's now handled in the QuickBooks router
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+@app.get("/routes")
+async def get_routes() -> List[Dict]:
+    routes = []
+    for route in app.routes:
+        routes.append(
+            {
+                "path": route.path,
+                "name": route.name,
+                "methods": list(route.methods) if route.methods else [],
+            }
+        )
+    return routes

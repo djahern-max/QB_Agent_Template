@@ -40,7 +40,9 @@ class QuickBooksService:
     def _get_tokens(self, realm_id: str) -> Optional[QuickBooksTokens]:
         tokens = (
             self.db.query(QuickBooksTokens)
-            .filter(QuickBooksTokens.realm_id == realm_id)
+            .filter(
+                QuickBooksTokens.realm == realm_id
+            )  # Changed from realm_id to realm
             .first()
         )
         if not tokens:
@@ -246,7 +248,7 @@ async def quickbooks_callback(
         expires_at = datetime.utcnow() + timedelta(seconds=tokens["expires_in"])
 
         quickbooks_tokens = QuickBooksTokens(
-            realm_id=realmId,
+            realm=realmId,  # Changed from realm_id to realm
             access_token=tokens["access_token"],
             refresh_token=tokens["refresh_token"],
             expires_at=expires_at,
@@ -254,7 +256,7 @@ async def quickbooks_callback(
 
         existing_tokens = (
             db.query(QuickBooksTokens)
-            .filter(QuickBooksTokens.realm_id == realmId)
+            .filter(QuickBooksTokens.realm == realmId)  # Changed from realm_id to realm
             .first()
         )
 

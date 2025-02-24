@@ -25,7 +25,7 @@ router = APIRouter(
     },
 )
 
-# QuickBooks OAuth configuration
+# QuickBooks OAuth configuration options
 CLIENT_ID = os.getenv("QUICKBOOKS_CLIENT_ID")
 CLIENT_SECRET = os.getenv("QUICKBOOKS_CLIENT_SECRET")
 REDIRECT_URI = os.getenv("QUICKBOOKS_REDIRECT_URI")

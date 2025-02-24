@@ -20,9 +20,18 @@ REDIRECT_URI = os.getenv("QUICKBOOKS_REDIRECT_URI")
 AUTHORIZATION_ENDPOINT = "https://appcenter.intuit.com/connect/oauth2"
 TOKEN_ENDPOINT = "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
 
+# Environment detection
+ENVIRONMENT = os.getenv("QUICKBOOKS_ENVIRONMENT", "sandbox")
+IS_PRODUCTION = ENVIRONMENT.lower() == "production"
+
 
 class QuickBooksService:
-    BASE_URL = "https://sandbox-quickbooks.api.intuit.com"
+    # Update BASE_URL based on environment
+    BASE_URL = (
+        "https://quickbooks.api.intuit.com"
+        if IS_PRODUCTION
+        else "https://sandbox-quickbooks.api.intuit.com"
+    )
     API_VERSION = "v3"
 
     def __init__(self, db: Session):
@@ -140,6 +149,55 @@ class QuickBooksService:
         """Get specific invoice details"""
         return self._make_api_request(realm_id, f"invoice/{invoice_id}")
 
+    # Financial Report Methods - Adding these for your Financial Analysis Agent
+    def get_profit_and_loss(
+        self, realm_id: str, start_date: str = None, end_date: str = None
+    ) -> Dict[str, Any]:
+        """Get Profit and Loss report"""
+        if not start_date or not end_date:
+            # Default to last year if dates not provided
+            end_date = datetime.now().strftime("%Y-%m-%d")
+            start_date = (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
+
+        params = {
+            "start_date": start_date,
+            "end_date": end_date,
+            "accounting_method": "Accrual",
+        }
+        return self._make_api_request(realm_id, "reports/ProfitAndLoss", params=params)
+
+    def get_balance_sheet(
+        self, realm_id: str, start_date: str = None, end_date: str = None
+    ) -> Dict[str, Any]:
+        """Get Balance Sheet report"""
+        if not start_date or not end_date:
+            # Default to current date if dates not provided
+            end_date = datetime.now().strftime("%Y-%m-%d")
+            start_date = (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
+
+        params = {
+            "start_date": start_date,
+            "end_date": end_date,
+            "accounting_method": "Accrual",
+        }
+        return self._make_api_request(realm_id, "reports/BalanceSheet", params=params)
+
+    def get_cash_flow(
+        self, realm_id: str, start_date: str = None, end_date: str = None
+    ) -> Dict[str, Any]:
+        """Get Cash Flow report"""
+        if not start_date or not end_date:
+            # Default to last year if dates not provided
+            end_date = datetime.now().strftime("%Y-%m-%d")
+            start_date = (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
+
+        params = {
+            "start_date": start_date,
+            "end_date": end_date,
+            "accounting_method": "Accrual",
+        }
+        return self._make_api_request(realm_id, "reports/CashFlow", params=params)
+
 
 # OAuth Flow Routes
 @router.get("/connect/quickbooks")
@@ -250,6 +308,43 @@ async def get_invoices(realm_id: str, db: Session = Depends(get_db)) -> Dict[str
     return qb_service.get_invoices(realm_id)
 
 
+# Add Financial Report Routes
+@router.get("/reports/profit-and-loss/{realm_id}")
+async def get_profit_and_loss(
+    realm_id: str,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    db: Session = Depends(get_db),
+) -> Dict[str, Any]:
+    """Get Profit and Loss report from QuickBooks"""
+    qb_service = QuickBooksService(db)
+    return qb_service.get_profit_and_loss(realm_id, start_date, end_date)
+
+
+@router.get("/reports/balance-sheet/{realm_id}")
+async def get_balance_sheet(
+    realm_id: str,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    db: Session = Depends(get_db),
+) -> Dict[str, Any]:
+    """Get Balance Sheet report from QuickBooks"""
+    qb_service = QuickBooksService(db)
+    return qb_service.get_balance_sheet(realm_id, start_date, end_date)
+
+
+@router.get("/reports/cash-flow/{realm_id}")
+async def get_cash_flow(
+    realm_id: str,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    db: Session = Depends(get_db),
+) -> Dict[str, Any]:
+    """Get Cash Flow report from QuickBooks"""
+    qb_service = QuickBooksService(db)
+    return qb_service.get_cash_flow(realm_id, start_date, end_date)
+
+
 @router.get("/debug/quickbooks-config")
 async def debug_quickbooks_config():
     """Debug endpoint to check QuickBooks configuration"""
@@ -257,4 +352,6 @@ async def debug_quickbooks_config():
         "client_id": CLIENT_ID[:5] + "..." if CLIENT_ID else "Not set",
         "client_secret": CLIENT_SECRET[:5] + "..." if CLIENT_SECRET else "Not set",
         "redirect_uri": REDIRECT_URI,
+        "environment": ENVIRONMENT,
+        "api_base_url": QuickBooksService.BASE_URL,
     }

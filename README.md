@@ -4,6 +4,8 @@ Version: {{VERSION}}
 ## Overview
 An intelligent agent designed to provide comprehensive financial analysis through natural language interactions. The agent can process financial data from QuickBooks provide insights, ratios, metrics, and visualizations. Part of the RYZE.ai platform, this agent specializes in automated financial analysis and reporting.
 
+The objective is to have this AI Agent called "agent_1" listed on the RYZE.ai platform as its first AI Agent.  I need to move this AI Agent through the process of having it listed on the site with payment functionality implemented that factors in Open AI usage and allows for developers and the RYZE.ai platform to profit.  
+
 ## Project Structure
 
 SRC:

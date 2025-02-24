@@ -1,36 +1,27 @@
 import requests
 from dotenv import load_dotenv
 import os
+from urllib.parse import quote  # Add this import
 
 
 def test_quickbooks_connection():
-    # Load environment variables from .env file
     load_dotenv()
 
-    # Get credentials from environment variables
     client_id = os.getenv("QUICKBOOKS_CLIENT_ID")
     client_secret = os.getenv("QUICKBOOKS_CLIENT_SECRET")
     redirect_uri = os.getenv("QUICKBOOKS_REDIRECT_URI")
 
-    # Verify all required credentials are present
-    if not all([client_id, client_secret, redirect_uri]):
-        print("\nError: Missing required environment variables!")
-        print("Please check your .env file contains:")
-        print("- QUICKBOOKS_CLIENT_ID")
-        print("- QUICKBOOKS_CLIENT_SECRET")
-        print("- QUICKBOOKS_REDIRECT_URI")
-        return
+    # URL encode the redirect URI
+    encoded_redirect_uri = quote(redirect_uri, safe="")
 
-    # QuickBooks OAuth endpoint
     auth_endpoint = "https://appcenter.intuit.com/connect/oauth2"
 
-    # Create authorization URL
     auth_url = (
         f"{auth_endpoint}?"
         f"client_id={client_id}&"
         f"response_type=code&"
         f"scope=com.intuit.quickbooks.accounting%20openid%20profile%20email&"
-        f"redirect_uri={redirect_uri}&"
+        f"redirect_uri={encoded_redirect_uri}&"  # Use the encoded URI here
         f"state=security_token"
     )
 
@@ -45,7 +36,6 @@ def test_quickbooks_connection():
     print("\nAuthorization URL:")
     print(auth_url)
 
-    # Test if the URL is accessible
     try:
         response = requests.get(auth_endpoint)
         print(f"\nEndpoint Status: {response.status_code}")

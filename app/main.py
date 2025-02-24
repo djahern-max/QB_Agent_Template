@@ -12,6 +12,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount the QuickBooks router
 app.include_router(quickbooks_router, prefix="/api/v1", tags=["quickbooks"])
 
 
@@ -22,19 +23,7 @@ async def analyze_financial_document(
     return {"message": "Analysis complete"}
 
 
-@app.get("/callback")  # Note: not /api/v1/callback
-async def quickbooks_callback(code: str, state: str, realmId: str):
-    print(f"Received callback with code: {code}")
-    print(f"State: {state}")
-    print(f"RealmId: {realmId}")
-
-    return {
-        "code": code,
-        "state": state,
-        "realmId": realmId,
-        "message": "Authorization successful!",
-    }
-
+# Remove the duplicate callback route since it's now handled in the QuickBooks router
 
 if __name__ == "__main__":
     import uvicorn

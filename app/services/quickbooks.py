@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 import os
@@ -8,6 +8,7 @@ from app.database import get_db
 from app.models import QuickBooksTokens
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
+
 
 router = APIRouter()
 
@@ -220,63 +221,106 @@ async def connect_quickbooks():
 
 @router.get("/callback/quickbooks")
 async def quickbooks_callback(
-    code: str = None,
-    state: str = None,
-    realmId: str = None,
+    request: Request,  # Add this to access all query params
     db: Session = Depends(get_db),
 ):
     """Handles the QuickBooks OAuth callback and exchanges the code for tokens"""
-    if not code:
-        raise HTTPException(status_code=400, detail="Authorization failed")
-
     try:
+        # Get all query parameters to debug what's being received
+        params = dict(request.query_params)
+        print(f"All received parameters: {params}")
+
+        # Try to get code and realmId from various possible sources
+        code = params.get("code")
+        state = params.get("state")
+        realmId = params.get("realmId")
+
+        # Log what we're receiving
+        print(f"Code: {code}")
+        print(f"State: {state}")
+        print(f"RealmId: {realmId}")
+
+        if not code:
+            return {"detail": "No authorization code received", "params": params}
+
+        if not realmId:
+            return {"detail": "No realm ID received", "params": params}
+
         token_data = {
             "grant_type": "authorization_code",
             "code": code,
             "redirect_uri": REDIRECT_URI,
         }
 
+        print(f"Token request data: {token_data}")
+        print(f"Token endpoint: {TOKEN_ENDPOINT}")
+        print(f"Using client ID: {CLIENT_ID[:5]}...")
+
         token_response = requests.post(
             TOKEN_ENDPOINT, data=token_data, auth=(CLIENT_ID, CLIENT_SECRET)
         )
 
-        tokens = token_response.json()
+        print(f"Token response status: {token_response.status_code}")
+
+        # Try to parse response even if it's an error
+        try:
+            response_text = token_response.text
+            print(f"Raw response: {response_text}")
+            tokens = token_response.json()
+        except Exception as parse_error:
+            return {
+                "detail": f"Failed to parse token response: {str(parse_error)}",
+                "response": response_text,
+            }
 
         if "error" in tokens:
-            raise HTTPException(status_code=400, detail=tokens["error_description"])
+            return {
+                "detail": f"Token error: {tokens.get('error_description', tokens.get('error'))}",
+                "tokens": tokens,
+            }
 
         expires_at = datetime.utcnow() + timedelta(seconds=tokens["expires_in"])
 
-        quickbooks_tokens = QuickBooksTokens(
-            realm=realmId,  # Changed from realm_id to realm
-            access_token=tokens["access_token"],
-            refresh_token=tokens["refresh_token"],
-            expires_at=expires_at,
-        )
+        try:
+            quickbooks_tokens = QuickBooksTokens(
+                realm=realmId,
+                access_token=tokens["access_token"],
+                refresh_token=tokens["refresh_token"],
+                expires_at=expires_at,
+            )
 
-        existing_tokens = (
-            db.query(QuickBooksTokens)
-            .filter(QuickBooksTokens.realm == realmId)  # Changed from realm_id to realm
-            .first()
-        )
+            existing_tokens = (
+                db.query(QuickBooksTokens)
+                .filter(QuickBooksTokens.realm == realmId)
+                .first()
+            )
 
-        if existing_tokens:
-            existing_tokens.access_token = tokens["access_token"]
-            existing_tokens.refresh_token = tokens["refresh_token"]
-            existing_tokens.expires_at = expires_at
-        else:
-            db.add(quickbooks_tokens)
+            if existing_tokens:
+                existing_tokens.access_token = tokens["access_token"]
+                existing_tokens.refresh_token = tokens["refresh_token"]
+                existing_tokens.expires_at = expires_at
+            else:
+                db.add(quickbooks_tokens)
 
-        db.commit()
+            db.commit()
 
-        return {
-            "message": "Authorization successful!",
-            "realm_id": realmId,
-            "expires_at": expires_at.isoformat(),
-        }
+            return {
+                "message": "Authorization successful!",
+                "realm_id": realmId,
+                "expires_at": expires_at.isoformat(),
+            }
+        except Exception as db_error:
+            db.rollback()
+            return {"detail": f"Database error: {str(db_error)}"}
 
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Token exchange failed: {str(e)}")
+        import traceback
+
+        error_trace = traceback.format_exc()
+        return {
+            "detail": f"Callback processing error: {str(e)}",
+            "traceback": error_trace,
+        }
 
 
 # Data Access Routes

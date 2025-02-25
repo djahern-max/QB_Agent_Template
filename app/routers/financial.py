@@ -4,6 +4,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from typing import Dict, Optional
 from sqlalchemy.orm import Session
+from fastapi.responses import RedirectResponse
 
 from ..database import get_db
 from ..agents.financial_agent.agent import FinancialAnalysisAgent
@@ -146,10 +147,9 @@ async def quickbooks_callback_alt(
     try:
         # This should save the tokens to your database
         tokens = qb_service.handle_callback(code, realmId)
-        return {
-            "success": True,
-            "message": "Successfully authenticated with QuickBooks (alt route)",
-        }
+
+        # Redirect to dashboard or success page instead of returning JSON
+        return RedirectResponse(url="/financial")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Auth callback failed: {str(e)}")
 

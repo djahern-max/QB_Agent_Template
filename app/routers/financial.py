@@ -229,3 +229,9 @@ async def debug_tokens(db: Session = Depends(get_db)):
         }
     else:
         return {"error": "No tokens found"}
+
+
+@router.get("/api/financial/test")
+async def test_endpoint():
+    """Test endpoint to verify routing"""
+    return {"status": "ok", "message": "Test endpoint is working"}

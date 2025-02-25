@@ -41,20 +41,19 @@ async def root(request: Request):
 async def get_routes() -> List[Dict]:
     routes = []
     for route in app.routes:
-        # Check if this is a regular route or a mounted app
         if hasattr(route, "methods"):
             methods = list(route.methods) if route.methods else []
         else:
-            methods = []  # For mounted routes like static files
+            methods = []
 
         routes.append(
             {
-                "path": route.path,
-                "name": route.name,
-                "methods": methods,
+                "Path": route.path,
+                "Name": route.name or "Unnamed Route",
+                "Methods": ", ".join(methods),  # Join methods into a single string
             }
         )
-    return routes
+    return {"Available Routes": routes}
 
 
 # Run the application

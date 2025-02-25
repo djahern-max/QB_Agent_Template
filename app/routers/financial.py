@@ -256,3 +256,34 @@ async def get_company_info(
         raise HTTPException(
             status_code=500, detail=f"Error fetching company info: {str(e)}"
         )
+
+
+@router.post("/api/financial/disconnect")
+async def disconnect_quickbooks(request: Request, db: Session = Depends(get_db)):
+    """Disconnect from QuickBooks by removing the saved tokens"""
+    try:
+        # Get the data from the request body
+        data = await request.json()
+        realm_id = data.get("realm_id")
+
+        if not realm_id:
+            raise HTTPException(status_code=400, detail="realm_id is required")
+
+        # Find and delete the tokens for this realm
+        token = db.query(QuickBooksTokens).filter_by(realm_id=realm_id).first()
+
+        if not token:
+            raise HTTPException(
+                status_code=404, detail="No connection found for this realm"
+            )
+
+        # Delete the token
+        db.delete(token)
+        db.commit()
+
+        return {"success": True, "message": "Successfully disconnected from QuickBooks"}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to disconnect: {str(e)}")

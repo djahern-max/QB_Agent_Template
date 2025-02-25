@@ -207,3 +207,18 @@ async def check_connection_status(request: Request, db: Session = Depends(get_db
         raise HTTPException(
             status_code=500, detail=f"Failed to check connection status: {str(e)}"
         )
+
+
+@router.get("/api/financial/debug-tokens")
+async def debug_tokens(db: Session = Depends(get_db)):
+    """Debug endpoint to check saved tokens"""
+    tokens = db.query(QuickBooksTokens).order_by(QuickBooksTokens.id.desc()).first()
+    if tokens:
+        return {
+            "realm_id": tokens.realm_id,
+            "has_access_token": bool(tokens.access_token),
+            "has_refresh_token": bool(tokens.refresh_token),
+            "expires_at": tokens.expires_at.isoformat() if tokens.expires_at else None,
+        }
+    else:
+        return {"error": "No tokens found"}

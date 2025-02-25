@@ -115,3 +115,38 @@ async def check_connection_status(realm_id: str, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=500, detail=f"Failed to check connection status: {str(e)}"
         )
+
+
+@router.post("/api/financial/disconnect")
+async def disconnect_quickbooks(request: Request, db: Session = Depends(get_db)):
+    """Disconnect from QuickBooks by removing the saved tokens"""
+    try:
+        # Get the data from the request body
+        data = await request.json()
+        realm_id = data.get("realm_id")
+
+        print(f"Disconnect request received for realm_id: {realm_id}")
+
+        if not realm_id:
+            raise HTTPException(status_code=400, detail="realm_id is required")
+
+        # Find and delete the tokens for this realm
+        token = db.query(QuickBooksTokens).filter_by(realm_id=realm_id).first()
+
+        if not token:
+            print(f"No token found for realm_id: {realm_id}")
+            raise HTTPException(
+                status_code=404, detail="No connection found for this realm"
+            )
+
+        # Delete the token
+        print(f"Deleting token for realm_id: {realm_id}")
+        db.delete(token)
+        db.commit()
+        print(f"Token deleted successfully for realm_id: {realm_id}")
+
+        return {"success": True, "message": "Successfully disconnected from QuickBooks"}
+    except Exception as e:
+        print(f"Error in disconnect: {str(e)}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to disconnect: {str(e)}")

@@ -298,18 +298,23 @@ async def get_connected_companies(db: Session = Depends(get_db)):
     """Get all connected QuickBooks companies"""
     try:
         tokens = db.query(QuickBooksTokens).all()
+        print(f"Found {len(tokens)} tokens")
+
         companies = [
             {
                 "realm_id": token.realm_id,
-                "company_name": f"Company {token.id}",  # You can change this if you store company names
+                "company_name": f"Company {token.id}",
                 "connected_at": (
                     token.created_at.isoformat() if token.created_at else None
                 ),
             }
             for token in tokens
         ]
+
+        print(f"Returning companies: {companies}")
         return companies
     except Exception as e:
+        print(f"Error getting connected companies: {str(e)}")
         raise HTTPException(
             status_code=500, detail=f"Failed to get connected companies: {str(e)}"
         )

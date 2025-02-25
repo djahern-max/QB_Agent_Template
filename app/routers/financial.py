@@ -132,3 +132,49 @@ async def get_suggested_questions():
 async def financial_dashboard(request: Request):
     """Render the financial dashboard"""
     return templates.TemplateResponse("financial_dashboard.html", {"request": request})
+
+
+@router.get("/api/financial/callback/quickbooks")
+async def quickbooks_callback_alt(
+    request: Request,
+    code: str,
+    state: str = None,
+    realmId: str = None,
+    qb_service: QuickBooksService = Depends(),
+):
+    """Handle alternative QuickBooks OAuth callback URL"""
+    try:
+        # This should save the tokens to your database
+        tokens = qb_service.handle_callback(code, realmId)
+        return {
+            "success": True,
+            "message": "Successfully authenticated with QuickBooks (alt route)",
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Auth callback failed: {str(e)}")
+
+
+@router.get("/{full_path:path}")
+async def catch_all_route(request: Request, full_path: str):
+    """Debug route to catch all requests and print the path"""
+    print(f"Received request at path: {full_path}")
+    print(f"Full URL: {request.url}")
+    print(f"Query params: {request.query_params}")
+
+    # Check if it's a QuickBooks callback
+    if "callback/quickbooks" in full_path and "code" in request.query_params:
+        code = request.query_params.get("code")
+        realmId = request.query_params.get("realmId")
+
+        # Create QBService and handle callback
+        qb_service = QuickBooksService(next(get_db()))
+        try:
+            tokens = qb_service.handle_callback(code, realmId)
+            return {
+                "success": True,
+                "message": "Successfully authenticated with QuickBooks (catch-all route)",
+            }
+        except Exception as e:
+            return {"error": f"Auth callback failed: {str(e)}"}
+
+    return {"path": full_path, "message": "Route not found"}

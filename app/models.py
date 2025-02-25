@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 Base = declarative_base()
 
 
-class QuickBooksTokens(Base):
+class QuickBooksTokenss(Base):
     __tablename__ = "quickbooks_tokens"
 
     id = Column(Integer, primary_key=True)
@@ -22,7 +22,7 @@ class FinancialAnalysis(Base):
     id = Column(Integer, primary_key=True)
     realm_id = Column(
         String, nullable=False
-    )  # Foreign key relation to QuickBooksTokens
+    )  # Foreign key relation to QuickBooksTokenss
     analysis_date = Column(DateTime, server_default=func.now())
     summary = Column(Text)
     positive_insights = Column(Text)  # Store as JSON string

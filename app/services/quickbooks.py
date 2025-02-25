@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..models import (
-    QuickBooksToken,
+    QuickBooksTokens,
 )  # Make sure you have this model defined in your database models
 
 
@@ -84,7 +84,7 @@ class QuickBooksService:
     def _save_tokens(self, tokens: Dict, realm_id: str) -> None:
         """Save QuickBooks tokens to database"""
         token_record = (
-            self.db.query(QuickBooksToken).filter_by(realm_id=realm_id).first()
+            self.db.query(QuickBooksTokens).filter_by(realm_id=realm_id).first()
         )
 
         if token_record:
@@ -95,7 +95,7 @@ class QuickBooksService:
                 "x_refresh_token_expires_in"
             )
         else:
-            token_record = QuickBooksToken(
+            token_record = QuickBooksTokens(
                 realm_id=realm_id,
                 access_token=tokens["access_token"],
                 refresh_token=tokens["refresh_token"],
@@ -109,7 +109,7 @@ class QuickBooksService:
     def _get_tokens(self, realm_id: str) -> Dict:
         """Get tokens from database and refresh if needed"""
         token_record = (
-            self.db.query(QuickBooksToken).filter_by(realm_id=realm_id).first()
+            self.db.query(QuickBooksTokens).filter_by(realm_id=realm_id).first()
         )
 
         if not token_record:

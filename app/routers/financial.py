@@ -240,7 +240,7 @@ async def catch_all_route(request: Request, full_path: str):
 # Add this to your financial.py router
 
 
-@router.get("/quickbooks/company/{realm_id}")
+@router.get("/company-info")
 async def get_company_info(
     realm_id: str,
     qb_service: QuickBooksService = Depends(),

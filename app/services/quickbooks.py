@@ -202,6 +202,7 @@ def get_company_info(self, realm_id: str) -> Dict[str, Any]:
     }
 
     print(f"DEBUG: Making request to: {url}")
+    print(f"DEBUG: Headers: {headers}")
 
     response = requests.get(url, headers=headers)
     print(f"DEBUG: Response status: {response.status_code}")
@@ -217,6 +218,9 @@ def get_company_info(self, realm_id: str) -> Dict[str, Any]:
 
             # Retry with new token
             headers["Authorization"] = f"Bearer {refreshed_tokens['access_token']}"
+            print(
+                f"DEBUG: Retrying with new token, length: {len(refreshed_tokens['access_token'])}"
+            )
             response = requests.get(url, headers=headers)
             print(f"DEBUG: Retry response status: {response.status_code}")
 

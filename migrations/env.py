@@ -14,7 +14,7 @@ load_dotenv()
 
 # Import the models
 from app.database import Base
-from app.models import QuickBooksTokenss
+from app.models import QuickBooksTokens
 
 # Alembic Config object
 config = context.config

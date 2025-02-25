@@ -44,10 +44,9 @@ async def quickbooks_callback(
         raise HTTPException(status_code=500, detail=f"Auth callback failed: {str(e)}")
 
 
-@router.get("/agent1.ryze.ai")
-async def get_accounts(
-    request: Request, realm_id: str, qb_service: QuickBooksService = Depends()
-):
+# Update in routers/financial.py
+@router.get("/api/financial/accounts/{realm_id}")
+async def get_accounts(realm_id: str, qb_service: QuickBooksService = Depends()):
     """Get chart of accounts from QuickBooks"""
     try:
         accounts = qb_service.get_accounts(realm_id)

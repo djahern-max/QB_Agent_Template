@@ -2,7 +2,7 @@
 import os
 import json
 from typing import Dict, Any
-import openai
+from openai import OpenAI
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
@@ -14,7 +14,7 @@ class FinancialAnalysisAgent:
         self.db = db
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
         # Initialize OpenAI client
-        self.client = openai.OpenAI(api_key=self.openai_api_key)
+        self.client = OpenAI(api_key=self.openai_api_key)
 
     async def analyze_accounts(self, accounts_data: Dict) -> Dict:
         """

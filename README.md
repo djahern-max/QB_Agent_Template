@@ -14,6 +14,8 @@ For now I want to work on pulling in the chart of accounts and figuring out the 
 
 ## Project Structure
 
+BACKEND:
+
 SRC:
 
 .
@@ -27,9 +29,10 @@ SRC:
 │   ├── core
 │   │   ├── __init__.py
 │   │   ├── base_agent.py
-│   │   └── errors
-│   │       ├── __init__.py
-│   │       └── handlers.py
+│   │   ├── errors
+│   │   │   ├── __init__.py
+│   │   │   └── handlers.py
+│   │   └── middleware.py
 │   ├── database.py
 │   ├── main.py
 │   ├── models.py
@@ -43,20 +46,20 @@ SRC:
 │   │   ├── client.py
 │   │   └── quickbooks.py
 │   └── utils
-│       └── __init__.py
+│       ├── __init__.py
+│       └── curl_helper.py
 ├── conftest.py
-├── exchange_tokens.py
 ├── migrations
 │   ├── env.py
 │   └── versions
-│       └── f9c49eb93979_initial_migration.py
+│       ├── 09643285cf9e_add_financial_analyses_table.py
+│       ├── 84f38a16cb8d_initial_migration.py
+│       └── e791c418fe9f_create_quickbooks_tokens_table.py
 ├── readme_update.py
 ├── ryze_ai.egg-info
-├── setup.py
+├── test_integration.py
 ├── test_openai.py
-├── test_quickbooks.py
-└── tests
-    └── test_agent.py
+└── test_quickbooks.py
 
 
 APP:
@@ -70,9 +73,10 @@ APP:
 ├── core
 │   ├── __init__.py
 │   ├── base_agent.py
-│   └── errors
-│       ├── __init__.py
-│       └── handlers.py
+│   ├── errors
+│   │   ├── __init__.py
+│   │   └── handlers.py
+│   └── middleware.py
 ├── database.py
 ├── main.py
 ├── models.py
@@ -86,7 +90,31 @@ APP:
 │   ├── client.py
 │   └── quickbooks.py
 └── utils
-    └── __init__.py
+    ├── __init__.py
+    └── curl_helper.py
+
+FRONTEND:
+
+
+./src
+├── App.jsx
+├── assets
+├── components
+│   ├── Feature.jsx
+│   └── InsightCard.jsx
+├── contexts
+├── main.jsx
+├── pages
+│   ├── CallbackPage.jsx
+│   ├── DashboardPage.jsx
+│   ├── ErrorScreen.jsx
+│   ├── HomePage.jsx
+│   ├── OAuthErrorPage.jsx
+│   ├── OAuthSuccessPage.jsx
+│   └── WelcomeScreen.jsx
+├── router.jsx
+└── services
+    └── quickbooksService.js
 
 
 ## Configuration

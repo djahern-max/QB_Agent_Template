@@ -127,16 +127,20 @@ async def quickbooks_callback_alt(
     qb_service: QuickBooksService = Depends(),
 ):
     """Handle QuickBooks OAuth callback"""
+    print(f"Callback received - code: {code[:10]}..., realmId: {realmId}")
     try:
         # Save tokens to database
         tokens = qb_service.handle_callback(code, realmId)
+        print(f"Tokens saved successfully for realm: {realmId}")
 
-        # IMPORTANT: Redirect to the frontend dashboard
+        # Redirect URL
         frontend_url = "https://agent1.ryze.ai/dashboard"
         redirect_url = f"{frontend_url}?realm_id={realmId}"
+        print(f"Redirecting to: {redirect_url}")
 
         return RedirectResponse(url=redirect_url)
     except Exception as e:
+        print(f"Error in callback: {str(e)}")
         error_url = "https://agent1.ryze.ai/oauth-error"
         return RedirectResponse(url=f"{error_url}?error={str(e)}")
 

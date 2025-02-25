@@ -266,6 +266,8 @@ async def disconnect_quickbooks(request: Request, db: Session = Depends(get_db))
         data = await request.json()
         realm_id = data.get("realm_id")
 
+        print(f"Disconnect request received for realm_id: {realm_id}")
+
         if not realm_id:
             raise HTTPException(status_code=400, detail="realm_id is required")
 
@@ -273,17 +275,19 @@ async def disconnect_quickbooks(request: Request, db: Session = Depends(get_db))
         token = db.query(QuickBooksTokens).filter_by(realm_id=realm_id).first()
 
         if not token:
+            print(f"No token found for realm_id: {realm_id}")
             raise HTTPException(
                 status_code=404, detail="No connection found for this realm"
             )
 
         # Delete the token
+        print(f"Deleting token for realm_id: {realm_id}")
         db.delete(token)
         db.commit()
+        print(f"Token deleted successfully for realm_id: {realm_id}")
 
         return {"success": True, "message": "Successfully disconnected from QuickBooks"}
-    except HTTPException as e:
-        raise e
     except Exception as e:
+        print(f"Error in disconnect: {str(e)}")
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to disconnect: {str(e)}")

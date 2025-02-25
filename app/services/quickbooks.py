@@ -127,40 +127,57 @@ class QuickBooksService:
             "realm_id": token_record.realm_id,
         }
 
-    def get_accounts(self, realm_id: str) -> Dict:
-        """Get chart of accounts from QuickBooks"""
-        tokens = self._get_tokens(realm_id)
 
-        url = f"{self.base_url}/{realm_id}/query"
-        headers = {
-            "Authorization": f"Bearer {tokens['access_token']}",
-            "Accept": "application/json",
-        }
+def get_accounts(self, realm_id: str) -> Dict:
+    """Get chart of accounts from QuickBooks"""
+    print(f"DEBUG: Getting accounts for realm_id: {realm_id}")
+    tokens = self._get_tokens(realm_id)
+    print(f"DEBUG: Got tokens with access_token length: {len(tokens['access_token'])}")
 
-        # Query to get all accounts
-        query = "SELECT * FROM Account WHERE Active = true ORDER BY Name"
-        params = {"query": query}
+    url = f"{self.base_url}/{realm_id}/query"
+    headers = {
+        "Authorization": f"Bearer {tokens['access_token']}",
+        "Accept": "application/json",
+    }
 
-        response = requests.get(url, headers=headers, params=params)
+    # Query to get all accounts
+    query = "SELECT * FROM Account WHERE Active = true ORDER BY Name"
+    params = {"query": query}
 
-        if response.status_code != 200:
-            # Try refreshing token if unauthorized
-            if response.status_code == 401:
-                refreshed_tokens = self._refresh_access_token(tokens["refresh_token"])
-                self._save_tokens(refreshed_tokens, realm_id)
+    print(f"DEBUG: Making request to: {url}")
+    print(f"DEBUG: Headers: {headers}")
+    print(f"DEBUG: Params: {params}")
 
-                # Retry with new token
-                headers["Authorization"] = f"Bearer {refreshed_tokens['access_token']}"
-                response = requests.get(url, headers=headers, params=params)
+    response = requests.get(url, headers=headers, params=params)
+    print(f"DEBUG: Response status: {response.status_code}")
 
-                if response.status_code != 200:
-                    raise HTTPException(
-                        status_code=response.status_code,
-                        detail="Failed to fetch accounts after token refresh",
-                    )
-            else:
+    if response.status_code != 200:
+        print(f"DEBUG: Response body: {response.text[:500]}")
+
+        # Try refreshing token if unauthorized
+        if response.status_code == 401:
+            print("DEBUG: Attempting to refresh token")
+            refreshed_tokens = self._refresh_access_token(tokens["refresh_token"])
+            self._save_tokens(refreshed_tokens, realm_id)
+
+            # Retry with new token
+            headers["Authorization"] = f"Bearer {refreshed_tokens['access_token']}"
+            print(
+                f"DEBUG: Retrying with new token, length: {len(refreshed_tokens['access_token'])}"
+            )
+            response = requests.get(url, headers=headers, params=params)
+            print(f"DEBUG: Retry response status: {response.status_code}")
+
+            if response.status_code != 200:
+                print(f"DEBUG: Retry response body: {response.text[:500]}")
                 raise HTTPException(
-                    status_code=response.status_code, detail="Failed to fetch accounts"
+                    status_code=response.status_code,
+                    detail=f"Failed to fetch accounts after token refresh: {response.text[:200]}",
                 )
+        else:
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Failed to fetch accounts: {response.text[:200]}",
+            )
 
-        return response.json()
+    return response.json()

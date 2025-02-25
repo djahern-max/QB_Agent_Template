@@ -1,7 +1,7 @@
 # app/routers/financial.py
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.templating import Jinja2Templates
+
 from typing import Dict, Optional
 from sqlalchemy.orm import Session
 from fastapi.responses import RedirectResponse
@@ -13,8 +13,6 @@ from ..services.quickbooks import (
     QuickBooksTokens,
 )  # Assuming you already have this service
 
-# Set up templates
-templates = Jinja2Templates(directory="templates")
 
 router = APIRouter(tags=["financial"])
 

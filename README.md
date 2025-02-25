@@ -6,6 +6,12 @@ An intelligent agent designed to provide comprehensive financial analysis throug
 
 The objective is to have this AI Agent called "agent_1" listed on the RYZE.ai platform as its first AI Agent.  I need to move this AI Agent through the process of having it listed on the site with payment functionality implemented that factors in Open AI usage and allows for developers and the RYZE.ai platform to profit.  
 
+I want to work on pulling the chart of accounts so I can select a LLM to conduction finaincial analysis, recognize trends and make suggestions.  The agent should make the user aware of anything they should be concerned with (negative trends) and anything they should be happy with.  
+
+I have an Open AI api key but I am open to exploring other options such as Hugging Face, etc.
+
+For now I want to work on pulling in the chart of accounts and figuring out the flow of the application and how it will be hosted on the RYZE platform.  https://www.ryze.ai/
+
 ## Project Structure
 
 SRC:

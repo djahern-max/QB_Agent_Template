@@ -6,6 +6,7 @@ import datetime
 
 from ..database import get_db
 from ..services.quickbooks import QuickBooksService, QuickBooksTokens
+from ..agents.financial_agent.agent import FinancialAnalysisAgent
 
 router = APIRouter()
 
@@ -150,3 +151,76 @@ async def disconnect_quickbooks(request: Request, db: Session = Depends(get_db))
         print(f"Error in disconnect: {str(e)}")
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to disconnect: {str(e)}")
+
+
+@router.post("/api/financial/analyze")
+async def analyze_accounts(
+    request: Request,
+    db: Session = Depends(get_db),
+    agent: FinancialAnalysisAgent = Depends(),
+):
+    """Analyze chart of accounts with GPT-4"""
+    try:
+        # Get the accounts data from the request body
+        data = await request.json()
+        accounts_data = data.get("accounts_data")
+
+        if not accounts_data:
+            raise HTTPException(status_code=400, detail="Accounts data is required")
+
+        # Analyze with GPT-4
+        analysis = await agent.analyze_accounts(accounts_data)
+
+        return analysis
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+
+
+@router.post("/api/financial/ask")
+async def ask_question(
+    request: Request,
+    db: Session = Depends(get_db),
+    agent: FinancialAnalysisAgent = Depends(),
+):
+    """Answer a financial question about the accounts"""
+    try:
+        # Get the data from the request body
+        data = await request.json()
+        accounts_data = data.get("accounts_data")
+        question = data.get("question")
+
+        if not accounts_data:
+            raise HTTPException(status_code=400, detail="Accounts data is required")
+
+        if not question:
+            raise HTTPException(status_code=400, detail="Question is required")
+
+        # Get answer from GPT-4
+        answer = await agent.ask_question(accounts_data, question)
+
+        return answer
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to answer question: {str(e)}"
+        )
+
+
+@router.get("/api/financial/suggested-questions")
+async def get_suggested_questions():
+    """Get suggested financial questions"""
+    return {
+        "questions": [
+            "What is my current financial health?",
+            "How can I improve my cash flow?",
+            "What are my biggest expense categories?",
+            "Is my debt-to-equity ratio healthy?",
+            "What tax strategies should I consider?",
+            "Are there any concerning financial trends?",
+            "How can I reduce my operational costs?",
+            "Should I be concerned about my current liabilities?",
+        ]
+    }

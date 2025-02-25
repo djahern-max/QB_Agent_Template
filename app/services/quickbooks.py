@@ -1,4 +1,3 @@
-# app/services/quickbooks.py
 import os
 import requests
 import datetime
@@ -7,9 +6,7 @@ from fastapi import HTTPException, Depends
 from sqlalchemy.orm import Session
 
 from ..database import get_db
-from ..models import (
-    QuickBooksTokens,
-)  # Make sure you have this model defined in your database models
+from ..models import QuickBooksTokens
 
 
 class QuickBooksService:
@@ -17,7 +14,6 @@ class QuickBooksService:
         self.client_id = os.getenv("QUICKBOOKS_CLIENT_ID")
         self.client_secret = os.getenv("QUICKBOOKS_CLIENT_SECRET")
         self.redirect_uri = os.getenv("QUICKBOOKS_REDIRECT_URI")
-        # Change from sandbox to production URL
         self.base_url = "https://quickbooks.api.intuit.com/v3/company"
         self.db = db
 
@@ -38,10 +34,7 @@ class QuickBooksService:
     def handle_callback(self, code: str, realm_id: str) -> Dict:
         """Handle OAuth callback and exchange code for tokens"""
         tokens = self._exchange_code_for_tokens(code)
-
-        # Save tokens to database with realm_id
         self._save_tokens(tokens, realm_id)
-
         return tokens
 
     def _exchange_code_for_tokens(self, code: str) -> Dict:
@@ -99,15 +92,13 @@ class QuickBooksService:
         if token_record:
             token_record.access_token = tokens["access_token"]
             token_record.refresh_token = tokens["refresh_token"]
-            token_record.expires_at = (
-                expires_at  # Using expires_at instead of expires_in
-            )
+            token_record.expires_at = expires_at
         else:
             token_record = QuickBooksTokens(
                 realm_id=realm_id,
                 access_token=tokens["access_token"],
                 refresh_token=tokens["refresh_token"],
-                expires_at=expires_at,  # Using expires_at instead of expires_in
+                expires_at=expires_at,
             )
             self.db.add(token_record)
 
@@ -132,11 +123,7 @@ class QuickBooksService:
 
     def get_accounts(self, realm_id: str) -> Dict:
         """Get chart of accounts from QuickBooks"""
-        print(f"DEBUG: Getting accounts for realm_id: {realm_id}")
         tokens = self._get_tokens(realm_id)
-        print(
-            f"DEBUG: Got tokens with access_token length: {len(tokens['access_token'])}"
-        )
 
         url = f"{self.base_url}/{realm_id}/query"
         headers = {
@@ -148,11 +135,44 @@ class QuickBooksService:
         query = "SELECT * FROM Account WHERE Active = true ORDER BY Name"
         params = {"query": query}
 
-        print(f"DEBUG: Making request to: {url}")
-        print(f"DEBUG: Headers: {headers}")
-        print(f"DEBUG: Params: {params}")
-
         response = requests.get(url, headers=headers, params=params)
+
+        if response.status_code != 200:
+            # Try refreshing token if unauthorized
+            if response.status_code == 401:
+                refreshed_tokens = self._refresh_access_token(tokens["refresh_token"])
+                self._save_tokens(refreshed_tokens, realm_id)
+
+                # Retry with new token
+                headers["Authorization"] = f"Bearer {refreshed_tokens['access_token']}"
+                response = requests.get(url, headers=headers, params=params)
+
+                if response.status_code != 200:
+                    raise HTTPException(
+                        status_code=response.status_code,
+                        detail=f"Failed to fetch accounts after token refresh: {response.text[:200]}",
+                    )
+            else:
+                raise HTTPException(
+                    status_code=response.status_code,
+                    detail=f"Failed to fetch accounts: {response.text[:200]}",
+                )
+
+        return response.json()
+
+    def get_company_info(self, realm_id: str) -> Dict[str, Any]:
+        """Get company information from QuickBooks"""
+        print(f"DEBUG: Getting company info for realm_id: {realm_id}")
+        tokens = self._get_tokens(realm_id)
+
+        url = f"{self.base_url}/{realm_id}/companyinfo/{realm_id}"
+        headers = {
+            "Authorization": f"Bearer {tokens['access_token']}",
+            "Accept": "application/json",
+        }
+
+        print(f"DEBUG: Making request to: {url}")
+        response = requests.get(url, headers=headers)
         print(f"DEBUG: Response status: {response.status_code}")
 
         if response.status_code != 200:
@@ -166,74 +186,17 @@ class QuickBooksService:
 
                 # Retry with new token
                 headers["Authorization"] = f"Bearer {refreshed_tokens['access_token']}"
-                print(
-                    f"DEBUG: Retrying with new token, length: {len(refreshed_tokens['access_token'])}"
-                )
-                response = requests.get(url, headers=headers, params=params)
-                print(f"DEBUG: Retry response status: {response.status_code}")
+                response = requests.get(url, headers=headers)
 
                 if response.status_code != 200:
-                    print(f"DEBUG: Retry response body: {response.text[:500]}")
                     raise HTTPException(
                         status_code=response.status_code,
-                        detail=f"Failed to fetch accounts after token refresh: {response.text[:200]}",
+                        detail=f"Failed to fetch company info after token refresh: {response.text[:200]}",
                     )
             else:
                 raise HTTPException(
                     status_code=response.status_code,
-                    detail=f"Failed to fetch accounts: {response.text[:200]}",
+                    detail=f"Failed to fetch company info: {response.text[:200]}",
                 )
 
         return response.json()
-
-
-# Add this method to your QuickBooksService class
-
-
-def get_company_info(self, realm_id: str) -> Dict[str, Any]:
-    """Get company information from QuickBooks"""
-    print(f"DEBUG: Getting company info for realm_id: {realm_id}")
-    tokens = self._get_tokens(realm_id)
-
-    url = f"{self.base_url}/{realm_id}/companyinfo/{realm_id}"
-    headers = {
-        "Authorization": f"Bearer {tokens['access_token']}",
-        "Accept": "application/json",
-    }
-
-    print(f"DEBUG: Making request to: {url}")
-    print(f"DEBUG: Headers: {headers}")
-
-    response = requests.get(url, headers=headers)
-    print(f"DEBUG: Response status: {response.status_code}")
-
-    if response.status_code != 200:
-        print(f"DEBUG: Response body: {response.text[:500]}")
-
-        # Try refreshing token if unauthorized
-        if response.status_code == 401:
-            print("DEBUG: Attempting to refresh token")
-            refreshed_tokens = self._refresh_access_token(tokens["refresh_token"])
-            self._save_tokens(refreshed_tokens, realm_id)
-
-            # Retry with new token
-            headers["Authorization"] = f"Bearer {refreshed_tokens['access_token']}"
-            print(
-                f"DEBUG: Retrying with new token, length: {len(refreshed_tokens['access_token'])}"
-            )
-            response = requests.get(url, headers=headers)
-            print(f"DEBUG: Retry response status: {response.status_code}")
-
-            if response.status_code != 200:
-                print(f"DEBUG: Retry response body: {response.text[:500]}")
-                raise HTTPException(
-                    status_code=response.status_code,
-                    detail=f"Failed to fetch company info after token refresh: {response.text[:200]}",
-                )
-        else:
-            raise HTTPException(
-                status_code=response.status_code,
-                detail=f"Failed to fetch company info: {response.text[:200]}",
-            )
-
-    return response.json()

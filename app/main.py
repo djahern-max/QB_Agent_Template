@@ -1,17 +1,13 @@
-# app/main.py
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 import os
-from typing import List, Dict
+import logging
+from fastapi.routing import APIRoute
+from fastapi.responses import JSONResponse
+from starlette.responses import RedirectResponse
 
 from .routers import financial
 from .database import engine, Base
-import logging
-from fastapi.responses import PlainTextResponse
-from fastapi.routing import APIRoute
-from fastapi.responses import JSONResponse
-from fastapi.responses import PlainTextResponse
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -30,13 +26,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-# Include routers
+# Include routers directly without prefix
+# The prefix is already in the routes themselves
 app.include_router(financial.router)
 
 
-@app.get("/routes", response_class=JSONResponse)
+@app.get("/")
+async def root():
+    """Root endpoint that redirects to dashboard"""
+    return {"message": "API is working. For dashboard, go to /dashboard"}
+
+
+@app.get("/api/routes", response_class=JSONResponse)
 async def get_routes():
+    """Get all API routes"""
     routes = []
     for route in app.routes:
         if isinstance(route, APIRoute):
@@ -44,6 +47,16 @@ async def get_routes():
                 {"path": route.path, "name": route.name, "methods": list(route.methods)}
             )
     return {"routes": routes}
+
+
+# Catch-all route to see what paths are being requested
+@app.get("/api/{full_path:path}", include_in_schema=False)
+async def api_catch_all(request: Request, full_path: str):
+    """Debug route to catch all API requests and print the path"""
+    logger.debug(f"Received API request at path: {full_path}")
+    logger.debug(f"Full URL: {request.url}")
+    logger.debug(f"Query params: {request.query_params}")
+    return {"path": full_path, "message": "API route not found"}
 
 
 # Run the application

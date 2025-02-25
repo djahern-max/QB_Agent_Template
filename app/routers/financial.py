@@ -1,23 +1,16 @@
-# app/routers/financial.py
 from fastapi import APIRouter, Depends, HTTPException, Request
-from fastapi.responses import HTMLResponse, JSONResponse
-
+from fastapi.responses import RedirectResponse
 from typing import Dict, Optional
 from sqlalchemy.orm import Session
-from fastapi.responses import RedirectResponse
 import datetime
 
 from ..database import get_db
-from ..agents.financial_agent.agent import FinancialAnalysisAgent
-from ..services.quickbooks import (
-    QuickBooksService,
-    QuickBooksTokens,
-)  # Assuming you already have this service
+from ..services.quickbooks import QuickBooksService, QuickBooksTokens
+
+router = APIRouter()
 
 
-router = APIRouter(tags=["financial"])
-
-
+# OAuth routes - Keep these since they're being used
 @router.get("/api/financial/auth-url")
 async def get_auth_url(request: Request, qb_service: QuickBooksService = Depends()):
     """Get QuickBooks authorization URL"""
@@ -26,103 +19,6 @@ async def get_auth_url(request: Request, qb_service: QuickBooksService = Depends
         return {"auth_url": auth_url}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get auth URL: {str(e)}")
-
-
-# Update in routers/financial.py
-@router.get("/api/financial/accounts/{realm_id}")
-async def get_accounts(realm_id: str, qb_service: QuickBooksService = Depends()):
-    """Get chart of accounts from QuickBooks"""
-    print(f"DEBUG: Account request received for realm_id: {realm_id}")
-    try:
-        accounts = qb_service.get_accounts(realm_id)
-        print(f"DEBUG: Successfully retrieved accounts")
-        return accounts
-    except Exception as e:
-        print(f"DEBUG: ERROR getting accounts: {str(e)}")
-        print(f"DEBUG: Error type: {type(e)}")
-        import traceback
-
-        print(f"DEBUG: Traceback: {traceback.format_exc()}")
-        raise HTTPException(status_code=500, detail=f"Failed to get accounts: {str(e)}")
-
-
-@router.post("/api/financial/analyze")
-async def analyze_accounts(
-    request: Request,
-    db: Session = Depends(get_db),
-    agent: FinancialAnalysisAgent = Depends(),
-):
-    """Analyze chart of accounts with GPT-4"""
-    try:
-        # Get the accounts data from the request body
-        data = await request.json()
-        accounts_data = data.get("accounts_data")
-
-        if not accounts_data:
-            raise HTTPException(status_code=400, detail="Accounts data is required")
-
-        # Analyze with GPT-4
-        analysis = await agent.analyze_accounts(accounts_data)
-
-        return analysis
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
-
-
-@router.post("/api/financial/ask")
-async def ask_question(
-    request: Request,
-    db: Session = Depends(get_db),
-    agent: FinancialAnalysisAgent = Depends(),
-):
-    """Answer a financial question about the accounts"""
-    try:
-        # Get the data from the request body
-        data = await request.json()
-        accounts_data = data.get("accounts_data")
-        question = data.get("question")
-
-        if not accounts_data:
-            raise HTTPException(status_code=400, detail="Accounts data is required")
-
-        if not question:
-            raise HTTPException(status_code=400, detail="Question is required")
-
-        # Get answer from GPT-4
-        answer = await agent.ask_question(accounts_data, question)
-
-        return answer
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Failed to answer question: {str(e)}"
-        )
-
-
-@router.get("/api/financial/suggested-questions")
-async def get_suggested_questions():
-    """Get suggested financial questions"""
-    return {
-        "questions": [
-            "What is my current financial health?",
-            "How can I improve my cash flow?",
-            "What are my biggest expense categories?",
-            "Is my debt-to-equity ratio healthy?",
-            "What tax strategies should I consider?",
-            "Are there any concerning financial trends?",
-            "How can I reduce my operational costs?",
-            "Should I be concerned about my current liabilities?",
-        ]
-    }
-
-
-@router.get("/financial")
-async def financial_dashboard(request: Request):
-    """Return financial dashboard API status"""
-    return {"message": "Financial dashboard API is working"}
 
 
 @router.get("/api/financial/callback/quickbooks")
@@ -134,165 +30,39 @@ async def quickbooks_callback(
     qb_service: QuickBooksService = Depends(),
 ):
     """Handle QuickBooks OAuth callback"""
-    print(f"Callback received - code: {code[:10]}..., realmId: {realmId}")
     try:
         # Save tokens to database
         tokens = qb_service.handle_callback(code, realmId)
-        print(f"Tokens saved successfully for realm: {realmId}")
 
         # Redirect URL with realm_id parameter
         frontend_url = "https://agent1.ryze.ai/dashboard"
         redirect_url = f"{frontend_url}?realm_id={realmId}"
-        print(f"Redirecting to: {redirect_url}")
 
         return RedirectResponse(url=redirect_url)
     except Exception as e:
-        print(f"Error in callback: {str(e)}")
         error_url = "https://agent1.ryze.ai/oauth-error"
         return RedirectResponse(url=f"{error_url}?error={str(e)}")
 
 
-@router.get("/api/financial/connection-status")
-async def check_connection_status(
-    request: Request, realm_id: str = None, db: Session = Depends(get_db)
-):
-    """Check if user is connected to QuickBooks"""
+# Accounts route - Keep because it's used by dashboard
+@router.get("/api/financial/accounts/{realm_id}")
+async def get_accounts(realm_id: str, qb_service: QuickBooksService = Depends()):
+    """Get chart of accounts from QuickBooks"""
     try:
-        if realm_id:
-            # Query for tokens for the specific realm_id
-            tokens = db.query(QuickBooksTokens).filter_by(realm_id=realm_id).first()
-        else:
-            # Fallback to most recent tokens if no realm_id provided
-            tokens = (
-                db.query(QuickBooksTokens).order_by(QuickBooksTokens.id.desc()).first()
-            )
-
-        if tokens:
-            # Check if token is expired
-            is_expired = (
-                tokens.expires_at and tokens.expires_at < datetime.datetime.now()
-            )
-
-            return {
-                "connected": not is_expired,
-                "realm_id": tokens.realm_id,
-                "expires_at": (
-                    tokens.expires_at.isoformat() if tokens.expires_at else None
-                ),
-            }
-        else:
-            return {"connected": False}
+        accounts = qb_service.get_accounts(realm_id)
+        return accounts
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Failed to check connection status: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to get accounts: {str(e)}")
 
 
-@router.get("/api/financial/debug-tokens")
-async def debug_tokens(db: Session = Depends(get_db)):
-    """Debug endpoint to check saved tokens"""
-    tokens = db.query(QuickBooksTokens).order_by(QuickBooksTokens.id.desc()).first()
-    if tokens:
-        return {
-            "realm_id": tokens.realm_id,
-            "has_access_token": bool(tokens.access_token),
-            "has_refresh_token": bool(tokens.refresh_token),
-            "expires_at": tokens.expires_at.isoformat() if tokens.expires_at else None,
-        }
-    else:
-        return {"error": "No tokens found"}
-
-
+# Add a test endpoint
 @router.get("/api/financial/test")
 async def test_endpoint():
     """Test endpoint to verify routing"""
     return {"status": "ok", "message": "Test endpoint is working"}
 
 
-@router.get("/{full_path:path}")
-async def catch_all_route(request: Request, full_path: str):
-    """Debug route to catch all requests and print the path"""
-    print(f"Received request at path: {full_path}")
-    print(f"Full URL: {request.url}")
-    print(f"Query params: {request.query_params}")
-
-    # Check if it's a QuickBooks callback
-    if "callback/quickbooks" in full_path and "code" in request.query_params:
-        code = request.query_params.get("code")
-        realmId = request.query_params.get("realmId")
-
-        # Create QBService and handle callback
-        qb_service = QuickBooksService(next(get_db()))
-        try:
-            tokens = qb_service.handle_callback(code, realmId)
-
-            # Add redirection here
-            frontend_url = "https://agent1.ryze.ai/dashboard"
-            redirect_url = f"{frontend_url}?realm_id={realmId}"
-            return RedirectResponse(url=redirect_url)
-        except Exception as e:
-            error_url = "https://agent1.ryze.ai/oauth-error"
-            return RedirectResponse(url=f"{error_url}?error={str(e)}")
-
-    return {"path": full_path, "message": "Route not found"}
-
-
-# Add this to your financial.py router
-
-
-@router.get("/company-info")
-async def get_company_info(
-    realm_id: str,
-    qb_service: QuickBooksService = Depends(),
-    db: Session = Depends(get_db),
-):
-    """Get company information from QuickBooks"""
-    try:
-        company_info = qb_service.get_company_info(realm_id)
-        return {"status": "success", "data": company_info}
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Error fetching company info: {str(e)}"
-        )
-
-
-@router.post("/api/financial/disconnect")
-async def disconnect_quickbooks(request: Request, db: Session = Depends(get_db)):
-    """Disconnect from QuickBooks by removing the saved tokens"""
-    try:
-        # Get the data from the request body
-        data = await request.json()
-        realm_id = data.get("realm_id")
-
-        print(f"Disconnect request received for realm_id: {realm_id}")
-
-        if not realm_id:
-            raise HTTPException(status_code=400, detail="realm_id is required")
-
-        # Find and delete the tokens for this realm
-        token = db.query(QuickBooksTokens).filter_by(realm_id=realm_id).first()
-
-        if not token:
-            print(f"No token found for realm_id: {realm_id}")
-            raise HTTPException(
-                status_code=404, detail="No connection found for this realm"
-            )
-
-        # Delete the token
-        print(f"Deleting token for realm_id: {realm_id}")
-        db.delete(token)
-        db.commit()
-        print(f"Token deleted successfully for realm_id: {realm_id}")
-
-        return {"success": True, "message": "Successfully disconnected from QuickBooks"}
-    except Exception as e:
-        print(f"Error in disconnect: {str(e)}")
-        db.rollback()
-        raise HTTPException(status_code=500, detail=f"Failed to disconnect: {str(e)}")
-
-
+# Add the company name endpoint
 @router.get("/api/financial/company-name/{realm_id}")
 async def get_company_name(realm_id: str, qb_service: QuickBooksService = Depends()):
     """Get company name from QuickBooks"""
@@ -305,4 +75,43 @@ async def get_company_name(realm_id: str, qb_service: QuickBooksService = Depend
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Error fetching company name: {str(e)}"
+        )
+
+
+# Add a detailed company info endpoint
+@router.get("/api/financial/company-info/{realm_id}")
+async def get_company_info(realm_id: str, qb_service: QuickBooksService = Depends()):
+    """Get detailed company information from QuickBooks"""
+    try:
+        company_info = qb_service.get_company_info(realm_id)
+        return {"status": "success", "data": company_info}
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error fetching company info: {str(e)}"
+        )
+
+
+# Add a connection status endpoint
+@router.get("/api/financial/connection-status/{realm_id}")
+async def check_connection_status(realm_id: str, db: Session = Depends(get_db)):
+    """Check if user is connected to QuickBooks"""
+    try:
+        tokens = db.query(QuickBooksTokens).filter_by(realm_id=realm_id).first()
+
+        if tokens:
+            is_expired = (
+                tokens.expires_at and tokens.expires_at < datetime.datetime.now()
+            )
+            return {
+                "connected": not is_expired,
+                "realm_id": tokens.realm_id,
+                "expires_at": (
+                    tokens.expires_at.isoformat() if tokens.expires_at else None
+                ),
+            }
+        else:
+            return {"connected": False}
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to check connection status: {str(e)}"
         )

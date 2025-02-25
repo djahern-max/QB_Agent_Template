@@ -291,3 +291,25 @@ async def disconnect_quickbooks(request: Request, db: Session = Depends(get_db))
         print(f"Error in disconnect: {str(e)}")
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to disconnect: {str(e)}")
+
+
+@router.get("/api/financial/connected-companies")
+async def get_connected_companies(db: Session = Depends(get_db)):
+    """Get all connected QuickBooks companies"""
+    try:
+        tokens = db.query(QuickBooksTokens).all()
+        companies = [
+            {
+                "realm_id": token.realm_id,
+                "company_name": f"Company {token.id}",  # You can change this if you store company names
+                "connected_at": (
+                    token.created_at.isoformat() if token.created_at else None
+                ),
+            }
+            for token in tokens
+        ]
+        return companies
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to get connected companies: {str(e)}"
+        )

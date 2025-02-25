@@ -132,8 +132,8 @@ async def get_suggested_questions():
 
 @router.get("/financial")
 async def financial_dashboard(request: Request):
-    """Render the financial dashboard"""
-    return templates.TemplateResponse("financial_dashboard.html", {"request": request})
+    """Return financial dashboard API status"""
+    return {"message": "Financial dashboard API is working"}
 
 
 @router.get("/api/financial/callback/quickbooks")
@@ -149,8 +149,12 @@ async def quickbooks_callback_alt(
         # This should save the tokens to your database
         tokens = qb_service.handle_callback(code, realmId)
 
-        # Redirect to dashboard or success page instead of returning JSON
-        return RedirectResponse(url="/financial")
+        # Return success JSON instead of redirecting
+        return {
+            "success": True,
+            "message": "Successfully authenticated with QuickBooks",
+            "realm_id": realmId,
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Auth callback failed: {str(e)}")
 

@@ -32,10 +32,17 @@ async def get_auth_url(request: Request, qb_service: QuickBooksService = Depends
 @router.get("/api/financial/accounts/{realm_id}")
 async def get_accounts(realm_id: str, qb_service: QuickBooksService = Depends()):
     """Get chart of accounts from QuickBooks"""
+    print(f"DEBUG: Account request received for realm_id: {realm_id}")
     try:
         accounts = qb_service.get_accounts(realm_id)
+        print(f"DEBUG: Successfully retrieved accounts")
         return accounts
     except Exception as e:
+        print(f"DEBUG: ERROR getting accounts: {str(e)}")
+        print(f"DEBUG: Error type: {type(e)}")
+        import traceback
+
+        print(f"DEBUG: Traceback: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Failed to get accounts: {str(e)}")
 
 

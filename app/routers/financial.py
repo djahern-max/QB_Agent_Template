@@ -5,6 +5,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from typing import Dict, Optional
 from sqlalchemy.orm import Session
 from fastapi.responses import RedirectResponse
+import datetime
 
 from ..database import get_db
 from ..agents.financial_agent.agent import FinancialAnalysisAgent
@@ -147,14 +148,14 @@ async def quickbooks_callback_alt(
         # This should save the tokens to your database
         tokens = qb_service.handle_callback(code, realmId)
 
-        # Return success JSON instead of redirecting
-        return {
-            "success": True,
-            "message": "Successfully authenticated with QuickBooks",
-            "realm_id": realmId,
-        }
+        # Redirect to the frontend dashboard with realm_id as query parameter
+        redirect_url = f"https://agent1.ryze.ai/oauth-success?realm_id={realmId}"
+        return RedirectResponse(url=redirect_url)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Auth callback failed: {str(e)}")
+        # Redirect to error page with error information
+        error_message = str(e)
+        error_url = f"https://agent1.ryze.ai/oauth-error?error={error_message}"
+        return RedirectResponse(url=error_url)
 
 
 @router.get("/{full_path:path}")
@@ -184,16 +185,28 @@ async def catch_all_route(request: Request, full_path: str):
 
 
 @router.get("/api/financial/connection-status")
-async def check_connection_status(request: Request, db: Session = Depends(get_db)):
+async def check_connection_status(
+    request: Request, realm_id: str = None, db: Session = Depends(get_db)
+):
     """Check if user is connected to QuickBooks"""
     try:
-        # Query for any QuickBooks tokens in the database
-        tokens = db.query(QuickBooksTokens).order_by(QuickBooksTokens.id.desc()).first()
+        if realm_id:
+            # Query for tokens for the specific realm_id
+            tokens = db.query(QuickBooksTokens).filter_by(realm_id=realm_id).first()
+        else:
+            # Fallback to most recent tokens if no realm_id provided
+            tokens = (
+                db.query(QuickBooksTokens).order_by(QuickBooksTokens.id.desc()).first()
+            )
 
         if tokens:
-            # Check if token is still valid (you might want to add expiration checking)
+            # Check if token is expired
+            is_expired = (
+                tokens.expires_at and tokens.expires_at < datetime.datetime.now()
+            )
+
             return {
-                "connected": True,
+                "connected": not is_expired,
                 "realm_id": tokens.realm_id,
                 "expires_at": (
                     tokens.expires_at.isoformat() if tokens.expires_at else None

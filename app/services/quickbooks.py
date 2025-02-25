@@ -57,6 +57,7 @@ class QuickBooksService:
 
         response = requests.post(token_url, headers=headers, data=data)
         if response.status_code != 200:
+            print(f"DEBUG: Token exchange failed with response: {response.text}")
             raise HTTPException(
                 status_code=400, detail="Failed to exchange code for tokens"
             )
@@ -76,6 +77,7 @@ class QuickBooksService:
 
         response = requests.post(token_url, headers=headers, data=data)
         if response.status_code != 200:
+            print(f"DEBUG: Token refresh failed with response: {response.text}")
             raise HTTPException(
                 status_code=400, detail="Failed to refresh access token"
             )

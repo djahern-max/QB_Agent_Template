@@ -126,7 +126,7 @@ async def financial_dashboard(request: Request):
 
 
 @router.get("/api/financial/callback/quickbooks")
-async def quickbooks_callback_alt(
+async def quickbooks_callback(
     request: Request,
     code: str,
     state: str = None,
@@ -140,7 +140,7 @@ async def quickbooks_callback_alt(
         tokens = qb_service.handle_callback(code, realmId)
         print(f"Tokens saved successfully for realm: {realmId}")
 
-        # Redirect URL
+        # Redirect URL with realm_id parameter
         frontend_url = "https://agent1.ryze.ai/dashboard"
         redirect_url = f"{frontend_url}?realm_id={realmId}"
         print(f"Redirecting to: {redirect_url}")

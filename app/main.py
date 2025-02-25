@@ -1,8 +1,6 @@
 # app/main.py
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 import os
 from typing import List, Dict
 
@@ -23,18 +21,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
-# Set up templates
-templates = Jinja2Templates(directory="templates")
-
 # Include routers
 app.include_router(financial.router)
 
 
 @app.get("/")
 async def root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return {"message": "RYZE.ai API is running"}
 
 
 @app.get("/routes")

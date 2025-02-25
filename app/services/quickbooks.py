@@ -17,7 +17,8 @@ class QuickBooksService:
         self.client_id = os.getenv("QUICKBOOKS_CLIENT_ID")
         self.client_secret = os.getenv("QUICKBOOKS_CLIENT_SECRET")
         self.redirect_uri = os.getenv("QUICKBOOKS_REDIRECT_URI")
-        self.base_url = "https://sandbox-quickbooks.api.intuit.com/v3/company"
+        # Change from sandbox to production URL
+        self.base_url = "https://quickbooks.api.intuit.com/v3/company"
         self.db = db
 
     def get_auth_url(self) -> str:

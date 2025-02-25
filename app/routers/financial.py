@@ -28,22 +28,6 @@ async def get_auth_url(request: Request, qb_service: QuickBooksService = Depends
         raise HTTPException(status_code=500, detail=f"Failed to get auth URL: {str(e)}")
 
 
-@router.get("/api/financial/callback")
-async def quickbooks_callback(
-    request: Request, code: str, realmId: str, qb_service: QuickBooksService = Depends()
-):
-    """Handle QuickBooks OAuth callback"""
-    try:
-        # This should save the tokens to your database
-        tokens = qb_service.handle_callback(code, realmId)
-        return {
-            "success": True,
-            "message": "Successfully authenticated with QuickBooks",
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Auth callback failed: {str(e)}")
-
-
 # Update in routers/financial.py
 @router.get("/api/financial/accounts/{realm_id}")
 async def get_accounts(realm_id: str, qb_service: QuickBooksService = Depends()):
@@ -142,19 +126,19 @@ async def quickbooks_callback_alt(
     realmId: str = None,
     qb_service: QuickBooksService = Depends(),
 ):
-    """Handle alternative QuickBooks OAuth callback URL"""
+    """Handle QuickBooks OAuth callback"""
     try:
-        # This should save the tokens to your database
+        # Save tokens to database
         tokens = qb_service.handle_callback(code, realmId)
 
-        # Redirect to the frontend dashboard with realm_id as query parameter
-        redirect_url = f"https://agent1.ryze.ai/oauth-success?realm_id={realmId}"
+        # IMPORTANT: Redirect to the frontend dashboard
+        frontend_url = "https://agent1.ryze.ai/dashboard"
+        redirect_url = f"{frontend_url}?realm_id={realmId}"
+
         return RedirectResponse(url=redirect_url)
     except Exception as e:
-        # Redirect to error page with error information
-        error_message = str(e)
-        error_url = f"https://agent1.ryze.ai/oauth-error?error={error_message}"
-        return RedirectResponse(url=error_url)
+        error_url = "https://agent1.ryze.ai/oauth-error"
+        return RedirectResponse(url=f"{error_url}?error={str(e)}")
 
 
 @router.get("/{full_path:path}")
@@ -173,12 +157,14 @@ async def catch_all_route(request: Request, full_path: str):
         qb_service = QuickBooksService(next(get_db()))
         try:
             tokens = qb_service.handle_callback(code, realmId)
-            return {
-                "success": True,
-                "message": "Successfully authenticated with QuickBooks (catch-all route)",
-            }
+
+            # Add redirection here
+            frontend_url = "https://agent1.ryze.ai/dashboard"
+            redirect_url = f"{frontend_url}?realm_id={realmId}"
+            return RedirectResponse(url=redirect_url)
         except Exception as e:
-            return {"error": f"Auth callback failed: {str(e)}"}
+            error_url = "https://agent1.ryze.ai/oauth-error"
+            return RedirectResponse(url=f"{error_url}?error={str(e)}")
 
     return {"path": full_path, "message": "Route not found"}
 

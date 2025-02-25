@@ -39,6 +39,31 @@ let accountDistributionChart = new Chart(accountsChart, {
     }
 });
 
+// Check the QuickBooks connection status
+async function checkConnectionStatus() {
+    try {
+        const response = await fetch('/api/financial/connection-status');
+        const data = await response.json();
+
+        if (data.connected) {
+            qbStatus.innerHTML = '<p class="text-green-600">✓ Connected to QuickBooks</p>';
+            connectButton.textContent = 'Reconnect to QuickBooks';
+            loadAccountsButton.disabled = false;
+            realmId = data.realm_id;
+            return true;
+        } else {
+            qbStatus.innerHTML = '<p class="text-yellow-600">Not connected to QuickBooks</p>';
+            connectButton.textContent = 'Connect to QuickBooks';
+            loadAccountsButton.disabled = true;
+            return false;
+        }
+    } catch (error) {
+        console.error('Error checking connection status:', error);
+        qbStatus.innerHTML = `<p class="text-red-600">Error checking connection: ${error.message}</p>`;
+        return false;
+    }
+}
+
 // Load suggested questions
 async function loadSuggestedQuestions() {
     try {
@@ -67,16 +92,8 @@ connectButton.addEventListener('click', async () => {
         const response = await fetch('/api/financial/auth-url');
         const data = await response.json();
 
-        // Open QuickBooks authorization in a new window
-        window.open(data.auth_url, '_blank');
-
-        qbStatus.innerHTML = '<p class="text-yellow-600">Authorization window opened. Please complete the authorization process.</p>';
-
-        // In a real app, you'd implement a way to detect when auth is complete
-        // For now, we'll just enable the load button
-        qbStatus.innerHTML = '<p class="text-green-600">✓ Connected to QuickBooks</p>';
-        loadAccountsButton.disabled = false;
-
+        // Redirect to QuickBooks authorization
+        window.location.href = data.auth_url;
     } catch (error) {
         console.error('Error getting auth URL:', error);
         qbStatus.innerHTML = `<p class="text-red-600">Error connecting to QuickBooks: ${error.message}</p>`;
@@ -86,9 +103,22 @@ connectButton.addEventListener('click', async () => {
 // Load chart of accounts
 loadAccountsButton.addEventListener('click', async () => {
     try {
-        // For demo, we'll use a hardcoded realm ID
-        // In a real app, you'd get this from your auth process
-        realmId = '9130355986898714'; // Replace with your actual realm ID or get it from auth
+        // Use the realmId from the connection check
+        if (!realmId) {
+            const connected = await checkConnectionStatus();
+            if (!connected) {
+                accountsTable.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="px-4 py-2 text-center border text-red-600">
+                            Not connected to QuickBooks. Please connect first.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+        }
+
+        qbStatus.innerHTML = '<p class="text-blue-600">Loading accounts...</p>';
 
         const response = await fetch(`/api/financial/accounts?realm_id=${realmId}`);
         accountsData = await response.json();
@@ -102,8 +132,11 @@ loadAccountsButton.addEventListener('click', async () => {
         // Enable asking questions
         askButton.disabled = false;
 
+        qbStatus.innerHTML = '<p class="text-green-600">✓ Connected to QuickBooks | Accounts loaded</p>';
+
     } catch (error) {
         console.error('Error loading accounts:', error);
+        qbStatus.innerHTML = '<p class="text-red-600">Error loading accounts</p>';
         accountsTable.innerHTML = `
             <tr>
                 <td colspan="3" class="px-4 py-2 text-center border text-red-600">
@@ -132,50 +165,62 @@ async function analyzeAccounts() {
         const analysis = await response.json();
 
         // Display summary
-        analysisSummary.innerHTML = `<p>${analysis.summary}</p>`;
+        analysisSummary.innerHTML = `<p>${analysis.summary || 'Analysis complete.'}</p>`;
 
         // Display positive insights
         positiveInsights.innerHTML = '';
-        if (analysis.positive_insights) {
+        if (analysis.positive_insights && analysis.positive_insights.length > 0) {
             analysis.positive_insights.forEach(insight => {
+                const insightObj = typeof insight === 'string' ? { description: insight } : insight;
                 positiveInsights.innerHTML += `
                     <div class="mb-3">
-                        <h3 class="font-medium text-green-600">${insight.title}</h3>
-                        <p>${insight.description}</p>
+                        <h3 class="font-medium text-green-600">${insightObj.title || 'Insight'}</h3>
+                        <p>${insightObj.description}</p>
                     </div>
                 `;
             });
+        } else {
+            positiveInsights.innerHTML = '<p class="text-gray-500">No positive insights found.</p>';
         }
 
         // Display concerns
         concerns.innerHTML = '';
-        if (analysis.concerns) {
+        if (analysis.concerns && analysis.concerns.length > 0) {
             analysis.concerns.forEach(concern => {
+                const concernObj = typeof concern === 'string' ? { description: concern } : concern;
                 concerns.innerHTML += `
                     <div class="mb-3">
-                        <h3 class="font-medium text-yellow-600">${concern.title}</h3>
-                        <p>${concern.description}</p>
+                        <h3 class="font-medium text-yellow-600">${concernObj.title || 'Concern'}</h3>
+                        <p>${concernObj.description}</p>
                     </div>
                 `;
             });
+        } else {
+            concerns.innerHTML = '<p class="text-gray-500">No concerns found.</p>';
         }
 
         // Display recommendations
         recommendations.innerHTML = '';
-        if (analysis.recommendations) {
+        if (analysis.recommendations && analysis.recommendations.length > 0) {
             analysis.recommendations.forEach(rec => {
+                const recObj = typeof rec === 'string' ? { description: rec } : rec;
                 recommendations.innerHTML += `
                     <div class="mb-3">
-                        <h3 class="font-medium text-blue-600">${rec.title}</h3>
-                        <p>${rec.description}</p>
+                        <h3 class="font-medium text-blue-600">${recObj.title || 'Recommendation'}</h3>
+                        <p>${recObj.description}</p>
                     </div>
                 `;
             });
+        } else {
+            recommendations.innerHTML = '<p class="text-gray-500">No recommendations found.</p>';
         }
 
     } catch (error) {
         console.error('Error analyzing accounts:', error);
         analysisSummary.innerHTML = `<p class="text-red-600">Error analyzing accounts: ${error.message}</p>`;
+        positiveInsights.innerHTML = '<p class="text-gray-500">Unavailable due to analysis error.</p>';
+        concerns.innerHTML = '<p class="text-gray-500">Unavailable due to analysis error.</p>';
+        recommendations.innerHTML = '<p class="text-gray-500">Unavailable due to analysis error.</p>';
     }
 }
 
@@ -215,7 +260,18 @@ askButton.addEventListener('click', async () => {
 
 // Display accounts in the table
 function displayAccounts(data) {
-    const accounts = data.QueryResponse?.Account || [];
+    if (!data || !data.QueryResponse) {
+        accountsTable.innerHTML = `
+            <tr>
+                <td colspan="3" class="px-4 py-2 text-center border">
+                    No account data available
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    const accounts = data.QueryResponse.Account || [];
 
     accountsTable.innerHTML = '';
 
@@ -246,7 +302,11 @@ function displayAccounts(data) {
 
 // Update the chart with account data
 function updateChart(data) {
-    const accounts = data.QueryResponse?.Account || [];
+    if (!data || !data.QueryResponse) {
+        return;
+    }
+
+    const accounts = data.QueryResponse.Account || [];
 
     // Group accounts by type
     const accountTypes = {};
@@ -266,10 +326,22 @@ function updateChart(data) {
 }
 
 // Initialize the page
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Check if already connected to QuickBooks
+    await checkConnectionStatus();
+
     // Load suggested questions
     loadSuggestedQuestions();
 
-    // Check if already connected to QuickBooks
-    // You could add an API endpoint to check this
+    // Check URL for query parameters that might indicate a callback
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('code') && urlParams.has('realmId')) {
+        // This might be a callback from QuickBooks - display a message
+        qbStatus.innerHTML = '<p class="text-green-600">✓ Authentication successful! The page will reload shortly.</p>';
+
+        // Wait a moment and then refresh the page to clear the URL parameters
+        setTimeout(() => {
+            window.location.href = '/financial';
+        }, 3000);
+    }
 });

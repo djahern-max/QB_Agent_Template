@@ -10,6 +10,7 @@ from ..database import get_db
 from ..agents.financial_agent.agent import FinancialAnalysisAgent
 from ..services.quickbooks import (
     QuickBooksService,
+    QuickBooksTokens,
 )  # Assuming you already have this service
 
 # Set up templates
@@ -178,3 +179,27 @@ async def catch_all_route(request: Request, full_path: str):
             return {"error": f"Auth callback failed: {str(e)}"}
 
     return {"path": full_path, "message": "Route not found"}
+
+
+@router.get("/api/financial/connection-status")
+async def check_connection_status(request: Request, db: Session = Depends(get_db)):
+    """Check if user is connected to QuickBooks"""
+    try:
+        # Query for any QuickBooks tokens in the database
+        tokens = db.query(QuickBooksTokens).order_by(QuickBooksTokens.id.desc()).first()
+
+        if tokens:
+            # Check if token is still valid (you might want to add expiration checking)
+            return {
+                "connected": True,
+                "realm_id": tokens.realm_id,
+                "expires_at": (
+                    tokens.expires_at.isoformat() if tokens.expires_at else None
+                ),
+            }
+        else:
+            return {"connected": False}
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to check connection status: {str(e)}"
+        )

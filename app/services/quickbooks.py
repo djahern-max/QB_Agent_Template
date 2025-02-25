@@ -185,3 +185,55 @@ class QuickBooksService:
                 )
 
         return response.json()
+
+
+# Add this method to your QuickBooksService class
+
+
+def get_company_info(self, realm_id: str) -> Dict[str, Any]:
+    """Get company information from QuickBooks"""
+    print(f"DEBUG: Getting company info for realm_id: {realm_id}")
+    tokens = self._get_tokens(realm_id)
+
+    url = f"{self.base_url}/{realm_id}/companyinfo/{realm_id}"
+    headers = {
+        "Authorization": f"Bearer {tokens['access_token']}",
+        "Accept": "application/json",
+    }
+
+    print(f"DEBUG: Making request to: {url}")
+    print(f"DEBUG: Headers: {headers}")
+
+    response = requests.get(url, headers=headers)
+    print(f"DEBUG: Response status: {response.status_code}")
+
+    if response.status_code != 200:
+        print(f"DEBUG: Response body: {response.text[:500]}")
+
+        # Try refreshing token if unauthorized
+        if response.status_code == 401:
+            print("DEBUG: Attempting to refresh token")
+            refreshed_tokens = self._refresh_access_token(tokens["refresh_token"])
+            self._save_tokens(refreshed_tokens, realm_id)
+
+            # Retry with new token
+            headers["Authorization"] = f"Bearer {refreshed_tokens['access_token']}"
+            print(
+                f"DEBUG: Retrying with new token, length: {len(refreshed_tokens['access_token'])}"
+            )
+            response = requests.get(url, headers=headers)
+            print(f"DEBUG: Retry response status: {response.status_code}")
+
+            if response.status_code != 200:
+                print(f"DEBUG: Retry response body: {response.text[:500]}")
+                raise HTTPException(
+                    status_code=response.status_code,
+                    detail=f"Failed to fetch company info after token refresh: {response.text[:200]}",
+                )
+        else:
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=f"Failed to fetch company info: {response.text[:200]}",
+            )
+
+    return response.json()

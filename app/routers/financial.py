@@ -235,3 +235,24 @@ async def catch_all_route(request: Request, full_path: str):
             return RedirectResponse(url=f"{error_url}?error={str(e)}")
 
     return {"path": full_path, "message": "Route not found"}
+
+
+# Add this to your financial.py router
+
+
+@router.get("/quickbooks/company/{realm_id}")
+async def get_company_info(
+    realm_id: str,
+    qb_service: QuickBooksService = Depends(),
+    db: Session = Depends(get_db),
+):
+    """Get company information from QuickBooks"""
+    try:
+        company_info = qb_service.get_company_info(realm_id)
+        return {"status": "success", "data": company_info}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error fetching company info: {str(e)}"
+        )

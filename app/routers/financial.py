@@ -152,34 +152,6 @@ async def quickbooks_callback_alt(
         return RedirectResponse(url=f"{error_url}?error={str(e)}")
 
 
-@router.get("/{full_path:path}")
-async def catch_all_route(request: Request, full_path: str):
-    """Debug route to catch all requests and print the path"""
-    print(f"Received request at path: {full_path}")
-    print(f"Full URL: {request.url}")
-    print(f"Query params: {request.query_params}")
-
-    # Check if it's a QuickBooks callback
-    if "callback/quickbooks" in full_path and "code" in request.query_params:
-        code = request.query_params.get("code")
-        realmId = request.query_params.get("realmId")
-
-        # Create QBService and handle callback
-        qb_service = QuickBooksService(next(get_db()))
-        try:
-            tokens = qb_service.handle_callback(code, realmId)
-
-            # Add redirection here
-            frontend_url = "https://agent1.ryze.ai/dashboard"
-            redirect_url = f"{frontend_url}?realm_id={realmId}"
-            return RedirectResponse(url=redirect_url)
-        except Exception as e:
-            error_url = "https://agent1.ryze.ai/oauth-error"
-            return RedirectResponse(url=f"{error_url}?error={str(e)}")
-
-    return {"path": full_path, "message": "Route not found"}
-
-
 @router.get("/api/financial/connection-status")
 async def check_connection_status(
     request: Request, realm_id: str = None, db: Session = Depends(get_db)
@@ -235,3 +207,31 @@ async def debug_tokens(db: Session = Depends(get_db)):
 async def test_endpoint():
     """Test endpoint to verify routing"""
     return {"status": "ok", "message": "Test endpoint is working"}
+
+
+@router.get("/{full_path:path}")
+async def catch_all_route(request: Request, full_path: str):
+    """Debug route to catch all requests and print the path"""
+    print(f"Received request at path: {full_path}")
+    print(f"Full URL: {request.url}")
+    print(f"Query params: {request.query_params}")
+
+    # Check if it's a QuickBooks callback
+    if "callback/quickbooks" in full_path and "code" in request.query_params:
+        code = request.query_params.get("code")
+        realmId = request.query_params.get("realmId")
+
+        # Create QBService and handle callback
+        qb_service = QuickBooksService(next(get_db()))
+        try:
+            tokens = qb_service.handle_callback(code, realmId)
+
+            # Add redirection here
+            frontend_url = "https://agent1.ryze.ai/dashboard"
+            redirect_url = f"{frontend_url}?realm_id={realmId}"
+            return RedirectResponse(url=redirect_url)
+        except Exception as e:
+            error_url = "https://agent1.ryze.ai/oauth-error"
+            return RedirectResponse(url=f"{error_url}?error={str(e)}")
+
+    return {"path": full_path, "message": "Route not found"}

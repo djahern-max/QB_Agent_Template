@@ -1,6 +1,7 @@
 # app/services/quickbooks.py
 import os
 import requests
+import datetime
 from typing import Dict, Any
 from fastapi import HTTPException, Depends
 from sqlalchemy.orm import Session
@@ -83,6 +84,11 @@ class QuickBooksService:
 
     def _save_tokens(self, tokens: Dict, realm_id: str) -> None:
         """Save QuickBooks tokens to database"""
+        # Calculate expires_at datetime from expires_in seconds
+        expires_at = datetime.datetime.now() + datetime.timedelta(
+            seconds=int(tokens["expires_in"])
+        )
+
         token_record = (
             self.db.query(QuickBooksTokens).filter_by(realm_id=realm_id).first()
         )
@@ -90,17 +96,15 @@ class QuickBooksService:
         if token_record:
             token_record.access_token = tokens["access_token"]
             token_record.refresh_token = tokens["refresh_token"]
-            token_record.expires_in = tokens["expires_in"]
-            token_record.refresh_token_expires_in = tokens.get(
-                "x_refresh_token_expires_in"
+            token_record.expires_at = (
+                expires_at  # Using expires_at instead of expires_in
             )
         else:
             token_record = QuickBooksTokens(
                 realm_id=realm_id,
                 access_token=tokens["access_token"],
                 refresh_token=tokens["refresh_token"],
-                expires_in=tokens["expires_in"],
-                refresh_token_expires_in=tokens.get("x_refresh_token_expires_in"),
+                expires_at=expires_at,  # Using expires_at instead of expires_in
             )
             self.db.add(token_record)
 

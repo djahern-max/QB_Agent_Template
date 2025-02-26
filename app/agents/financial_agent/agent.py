@@ -172,3 +172,101 @@ class FinancialAnalysisAgent:
             )
 
         return "\n".join(formatted_accounts)
+
+
+async def forecast_cash_flow(self, accounts_data: Dict) -> Dict:
+    """
+    Generate a cash flow forecast based on account data
+
+    Parameters:
+    - accounts_data: Dictionary containing the accounts data from QuickBooks
+
+    Returns:
+    - Dictionary containing the forecast and recommendations
+    """
+    try:
+        # Format accounts data for the prompt
+        accounts_summary = self._format_accounts_for_analysis(accounts_data)
+
+        # Create prompt for GPT-4
+        prompt = f"""
+        As a financial analyst specialized in cash flow management, review the following chart of accounts and provide a 90-day cash flow forecast:
+        
+        # Chart of Accounts
+        {accounts_summary}
+        
+        Based on this financial data, please provide:
+        1. A 90-day cash flow forecast broken down by month (next 3 months)
+        2. Key factors that will likely impact cash flow in the next 90 days
+        3. Three actionable recommendations to improve cash flow
+        4. Potential cash flow risks to be aware of
+        
+        Format your response as JSON with the following structure:
+        {{
+            "forecast": {{
+                "month1": {{
+                    "inflow": [estimated inflow in dollars],
+                    "outflow": [estimated outflow in dollars],
+                    "net_change": [net cash flow]
+                }},
+                "month2": {{
+                    "inflow": [estimated inflow in dollars],
+                    "outflow": [estimated outflow in dollars],
+                    "net_change": [net cash flow]
+                }},
+                "month3": {{
+                    "inflow": [estimated inflow in dollars],
+                    "outflow": [estimated outflow in dollars],
+                    "net_change": [net cash flow]
+                }}
+            }},
+            "impact_factors": [
+                {{
+                    "title": "Brief Title",
+                    "description": "Detailed explanation"
+                }}
+            ],
+            "recommendations": [
+                {{
+                    "title": "Brief Title",
+                    "description": "Detailed explanation"
+                }}
+            ],
+            "risks": [
+                {{
+                    "title": "Brief Title",
+                    "description": "Detailed explanation"
+                }}
+            ]
+        }}
+        """
+
+        # Call OpenAI API
+        response = self.client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a financial analysis AI specialized in cash flow forecasting and management.",
+                },
+                {"role": "user", "content": prompt},
+            ],
+            temperature=0.2,
+            max_tokens=1200,
+        )
+
+        # Extract response
+        response_content = response.choices[0].message.content
+
+        # Parse JSON
+        try:
+            forecast = json.loads(response_content)
+            return forecast
+        except json.JSONDecodeError:
+            return {
+                "error": "Could not parse GPT response as JSON",
+                "raw_response": response_content,
+            }
+
+    except Exception as e:
+        return {"error": f"Forecasting failed: {str(e)}"}

@@ -235,17 +235,83 @@ async def forecast_cash_flow(
 ):
     """Forecast cash flow based on QuickBooks data"""
     try:
-        # Get cash accounts
-        cash_accounts = qb_service.get_cash_accounts(realm_id)
-
-        # Get transaction history (last 90 days)
-        transactions = qb_service.get_transaction_history(realm_id, days=90)
+        # Get accounts data
+        accounts_data = await qb_service.get_accounts(realm_id)
 
         # Generate forecast with GPT-4
-        forecast = await agent.forecast_cash_flow(cash_accounts, transactions)
+        forecast = await agent.forecast_cash_flow(accounts_data)
 
         return forecast
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Failed to forecast cash flow: {str(e)}"
         )
+
+
+# Mock Data
+
+# @router.post("/api/financial/cash-flow-forecast/{realm_id}")
+# async def forecast_cash_flow(
+#     realm_id: str,
+#     request: Request,
+#     qb_service: QuickBooksService = Depends(),
+#     agent: FinancialAnalysisAgent = Depends(),
+# ):
+#     """Forecast cash flow based on QuickBooks data"""
+#     try:
+#         # For the initial version, we can just return mock data
+#         # Later you can implement the actual forecasting logic
+#         forecast_data = {
+#             "forecast": {
+#                 "month1": {"inflow": 45000, "outflow": 38000, "net_change": 7000},
+#                 "month2": {"inflow": 48000, "outflow": 40000, "net_change": 8000},
+#                 "month3": {"inflow": 52000, "outflow": 43000, "net_change": 9000},
+#             },
+#             "impact_factors": [
+#                 {
+#                     "title": "Seasonal Revenue Increase",
+#                     "description": "Expected 5-7% growth in Q3 based on historical patterns",
+#                 },
+#                 {
+#                     "title": "New Client Contracts",
+#                     "description": "Recently signed agreements will begin generating revenue",
+#                 },
+#                 {
+#                     "title": "Fixed Cost Structure",
+#                     "description": "Operating expenses remain relatively stable month-to-month",
+#                 },
+#             ],
+#             "recommendations": [
+#                 {
+#                     "title": "Invoice Management",
+#                     "description": "Follow up on outstanding invoices to improve cash position",
+#                 },
+#                 {
+#                     "title": "Expense Timing",
+#                     "description": "Consider shifting non-essential expenses to maintain cash buffer",
+#                 },
+#                 {
+#                     "title": "Inventory Management",
+#                     "description": "Optimize inventory levels to free up working capital",
+#                 },
+#             ],
+#             "risks": [
+#                 {
+#                     "title": "Payment Delays",
+#                     "description": "Some clients have historically delayed payments in Q3",
+#                 },
+#                 {
+#                     "title": "Increased Supplier Costs",
+#                     "description": "Possible price increases from key suppliers",
+#                 },
+#                 {
+#                     "title": "Seasonal Variations",
+#                     "description": "Historical fluctuations in monthly cash flow",
+#                 },
+#             ],
+#         }
+#         return forecast_data
+#     except Exception as e:
+#         raise HTTPException(
+#             status_code=500, detail=f"Failed to forecast cash flow: {str(e)}"
+#         )

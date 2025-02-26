@@ -1,0 +1,201 @@
+JournalNo,JournalDate,AccountName,Debits,Credits,Description,Name,Currency,Location,Class
+21,3/16/20,Services,,33333.74,Monthly Revenue,Michael Campbell,USD,Main Office,Revenue
+21,,Silicon Valley Reserve,33333.74,,Cash Receipt,Michael Campbell,USD,Main Office,Revenue
+22,3/23/20,Predictive Analytics Revenue,,29212.88,Monthly Revenue,Rodney Porter,USD,Main Office,Revenue
+22,,Silicon Valley Reserve,29212.88,,Cash Receipt,Rodney Porter,USD,Main Office,Revenue
+23,3/25/20,Predictive Analytics Revenue,,31905.53,Monthly Revenue,Jose Adams,USD,Main Office,Revenue
+23,,Silicon Valley Reserve,31905.53,,Cash Receipt,Jose Adams,USD,Main Office,Revenue
+24,3/21/20,Automated Defense Systems,,28860.14,Monthly Revenue,Stephanie Gross,USD,Main Office,Revenue
+24,,Silicon Valley Reserve,28860.14,,Cash Receipt,Stephanie Gross,USD,Main Office,Revenue
+25,3/23/20,AI Processing Services,,29673.37,Monthly Revenue,Donna Clark,USD,Main Office,Revenue
+25,,Silicon Valley Reserve,29673.37,,Cash Receipt,Donna Clark,USD,Main Office,Revenue
+26,3/12/20,Travel,14700.36,,Monthly Expense,David Jones,USD,Main Office,Expense
+26,,Silicon Valley Reserve,,14700.36,Cash Payment,David Jones,USD,Main Office,Expense
+27,3/4/20,Server Farm Utilities,12892.26,,Monthly Expense,John Jones,USD,Main Office,Expense
+27,,Silicon Valley Reserve,,12892.26,Cash Payment,John Jones,USD,Main Office,Expense
+28,3/16/20,Quantum Computing Insurance,12953.69,,Monthly Expense,Sarah Williams,USD,Main Office,Expense
+28,,Silicon Valley Reserve,,12953.69,Cash Payment,Sarah Williams,USD,Main Office,Expense
+29,3/18/20,Legal - System Protection,11756.02,,Monthly Expense,James Davis,USD,Main Office,Expense
+29,,Silicon Valley Reserve,,11756.02,Cash Payment,James Davis,USD,Main Office,Expense
+30,3/27/20,Server Infrastructure,10626.32,,Fixed Asset Purchase,David Jones,USD,Main Office,Fixed Assets
+30,,Silicon Valley Reserve,,10626.32,Cash Payment,David Jones,USD,Main Office,Fixed Assets
+31,4/25/20,Automated Defense Systems,,27264.61,Monthly Revenue,Donna Thompson,USD,Main Office,Revenue
+31,,Silicon Valley Reserve,27264.61,,Cash Receipt,Donna Thompson,USD,Main Office,Revenue
+32,4/6/20,AI Processing Services,,28980.09,Monthly Revenue,Dominic Fowler,USD,Main Office,Revenue
+32,,Silicon Valley Reserve,28980.09,,Cash Receipt,Dominic Fowler,USD,Main Office,Revenue
+33,4/15/20,Services,,30731.67,Monthly Revenue,Calvin Diaz,USD,Main Office,Revenue
+33,,Silicon Valley Reserve,30731.67,,Cash Receipt,Calvin Diaz,USD,Main Office,Revenue
+34,4/5/20,AI Processing Services,,25401.93,Monthly Revenue,Shawn Martinez,USD,Main Office,Revenue
+34,,Silicon Valley Reserve,25401.93,,Cash Receipt,Shawn Martinez,USD,Main Office,Revenue
+35,4/22/20,Neural Network Consulting,,28136.96,Monthly Revenue,Herbert Johnson,USD,Main Office,Revenue
+35,,Silicon Valley Reserve,28136.96,,Cash Receipt,Herbert Johnson,USD,Main Office,Revenue
+36,4/19/20,Travel,12903.89,,Monthly Expense,Emma Martinez,USD,Main Office,Expense
+36,,Silicon Valley Reserve,,12903.89,Cash Payment,Emma Martinez,USD,Main Office,Expense
+37,4/25/20,Insurance,12102.34,,Monthly Expense,Sophia Martinez,USD,Main Office,Expense
+37,,Silicon Valley Reserve,,12102.34,Cash Payment,Sophia Martinez,USD,Main Office,Expense
+38,4/28/20,Legal & Professional Services,11451.02,,Monthly Expense,Sarah Brown,USD,Main Office,Expense
+38,,Silicon Valley Reserve,,11451.02,Cash Payment,Sarah Brown,USD,Main Office,Expense
+39,4/4/20,Server Farm Utilities,13414.82,,Monthly Expense,Emily Jones,USD,Main Office,Expense
+39,,Silicon Valley Reserve,,13414.82,Cash Payment,Emily Jones,USD,Main Office,Expense
+40,5/15/20,Machine Learning as a Service,,29315.44,Monthly Revenue,Jeffrey Kim,USD,Main Office,Revenue
+40,,Silicon Valley Reserve,29315.44,,Cash Receipt,Jeffrey Kim,USD,Main Office,Revenue
+41,5/3/20,Neural Network Consulting,,30100.53,Monthly Revenue,Maurice Garcia,USD,Main Office,Revenue
+41,,Silicon Valley Reserve,30100.53,,Cash Receipt,Maurice Garcia,USD,Main Office,Revenue
+42,5/28/20,Machine Learning as a Service,,29536.04,Monthly Revenue,William Dean,USD,Main Office,Revenue
+42,,Silicon Valley Reserve,29536.04,,Cash Receipt,William Dean,USD,Main Office,Revenue
+43,5/5/20,Services,,27140.69,Monthly Revenue,Helen Kirk,USD,Main Office,Revenue
+43,,Silicon Valley Reserve,27140.69,,Cash Receipt,Helen Kirk,USD,Main Office,Revenue
+44,5/4/20,Predictive Analytics Revenue,,29432.78,Monthly Revenue,Kim Brown,USD,Main Office,Revenue
+44,,Silicon Valley Reserve,29432.78,,Cash Receipt,Kim Brown,USD,Main Office,Revenue
+45,5/17/20,Legal & Professional Services,14043.92,,Monthly Expense,Robert Brown,USD,Main Office,Expense
+45,,Silicon Valley Reserve,,14043.92,Cash Payment,Robert Brown,USD,Main Office,Expense
+46,5/19/20,Rent & Lease,11594.9,,Monthly Expense,David Smith,USD,Main Office,Expense
+46,,Silicon Valley Reserve,,11594.9,Cash Payment,David Smith,USD,Main Office,Expense
+47,5/15/20,Advertising & Marketing,14043.82,,Monthly Expense,Sarah Williams,USD,Main Office,Expense
+47,,Silicon Valley Reserve,,14043.82,Cash Payment,Sarah Williams,USD,Main Office,Expense
+48,5/6/20,Central Processing Costs,14229.89,,Monthly Expense,Sarah Rodriguez,USD,Main Office,Expense
+48,,Silicon Valley Reserve,,14229.89,Cash Payment,Sarah Rodriguez,USD,Main Office,Expense
+49,5/4/20,Server Infrastructure,8005.52,,Fixed Asset Purchase,Sophia Martinez,USD,Main Office,Fixed Assets
+49,,Silicon Valley Reserve,,8005.52,Cash Payment,Sophia Martinez,USD,Main Office,Fixed Assets
+50,6/1/20,AI Processing Services,,29815.17,Monthly Revenue,Andrew Johnson,USD,Main Office,Revenue
+50,,Silicon Valley Reserve,29815.17,,Cash Receipt,Andrew Johnson,USD,Main Office,Revenue
+51,6/19/20,Services,,32741.37,Monthly Revenue,Jasmine Taylor,USD,Main Office,Revenue
+51,,Silicon Valley Reserve,32741.37,,Cash Receipt,Jasmine Taylor,USD,Main Office,Revenue
+52,6/13/20,Automated Defense Systems,,30171.82,Monthly Revenue,Andrew Green,USD,Main Office,Revenue
+52,,Silicon Valley Reserve,30171.82,,Cash Receipt,Andrew Green,USD,Main Office,Revenue
+53,6/13/20,AI Processing Services,,30203.51,Monthly Revenue,Daniel Nguyen,USD,Main Office,Revenue
+53,,Silicon Valley Reserve,30203.51,,Cash Receipt,Daniel Nguyen,USD,Main Office,Revenue
+54,6/23/20,Automated Defense Systems,,31871.93,Monthly Revenue,Kelly Tran,USD,Main Office,Revenue
+54,,Silicon Valley Reserve,31871.93,,Cash Receipt,Kelly Tran,USD,Main Office,Revenue
+55,6/20/20,Legal - System Protection,13049.2,,Monthly Expense,James Wilson,USD,Main Office,Expense
+55,,Silicon Valley Reserve,,13049.2,Cash Payment,James Wilson,USD,Main Office,Expense
+56,6/18/20,Quantum Computing Insurance,15265.4,,Monthly Expense,Emma Martinez,USD,Main Office,Expense
+56,,Silicon Valley Reserve,,15265.4,Cash Payment,Emma Martinez,USD,Main Office,Expense
+57,6/27/20,Research & Development,14701.33,,Monthly Expense,Sophia Martinez,USD,Main Office,Expense
+57,,Silicon Valley Reserve,,14701.33,Cash Payment,Sophia Martinez,USD,Main Office,Expense
+58,6/3/20,Travel,14984.94,,Monthly Expense,Michael Johnson,USD,Main Office,Expense
+58,,Silicon Valley Reserve,,14984.94,Cash Payment,Michael Johnson,USD,Main Office,Expense
+59,6/4/20,Central Processing Buildings,12261.44,,Fixed Asset Purchase,Sarah Jones,USD,Main Office,Fixed Assets
+59,,Silicon Valley Reserve,,12261.44,Cash Payment,Sarah Jones,USD,Main Office,Fixed Assets
+60,7/4/20,Neural Network Consulting,,36518.12,Monthly Revenue,Henry Terry,USD,Main Office,Revenue
+60,,Silicon Valley Reserve,36518.12,,Cash Receipt,Henry Terry,USD,Main Office,Revenue
+61,7/8/20,Neural Network Consulting,,33479.6,Monthly Revenue,Mary Barr,USD,Main Office,Revenue
+61,,Silicon Valley Reserve,33479.6,,Cash Receipt,Mary Barr,USD,Main Office,Revenue
+62,7/17/20,Neural Network Consulting,,36956.81,Monthly Revenue,Dominique Davis,USD,Main Office,Revenue
+62,,Silicon Valley Reserve,36956.81,,Cash Receipt,Dominique Davis,USD,Main Office,Revenue
+63,7/1/20,Neural Network Consulting,,31706.49,Monthly Revenue,Amanda Chapman,USD,Main Office,Revenue
+63,,Silicon Valley Reserve,31706.49,,Cash Receipt,Amanda Chapman,USD,Main Office,Revenue
+64,7/16/20,AI Processing Services,,33356.46,Monthly Revenue,William Dean,USD,Main Office,Revenue
+64,,Silicon Valley Reserve,33356.46,,Cash Receipt,William Dean,USD,Main Office,Revenue
+65,7/8/20,Insurance,13355.14,,Monthly Expense,David Jones,USD,Main Office,Expense
+65,,Silicon Valley Reserve,,13355.14,Cash Payment,David Jones,USD,Main Office,Expense
+66,7/9/20,System Administrator Salaries,13203.42,,Monthly Expense,Isabella Wilson,USD,Main Office,Expense
+66,,Silicon Valley Reserve,,13203.42,Cash Payment,Isabella Wilson,USD,Main Office,Expense
+67,7/6/20,Office Supplies & Software,12535.08,,Monthly Expense,David Jones,USD,Main Office,Expense
+67,,Silicon Valley Reserve,,12535.08,Cash Payment,David Jones,USD,Main Office,Expense
+68,7/2/20,Insurance,13397.31,,Monthly Expense,James Wilson,USD,Main Office,Expense
+68,,Silicon Valley Reserve,,13397.31,Cash Payment,James Wilson,USD,Main Office,Expense
+69,8/12/20,Neural Network Consulting,,36420.66,Monthly Revenue,Rachael Mcbride,USD,Main Office,Revenue
+69,,Silicon Valley Reserve,36420.66,,Cash Receipt,Rachael Mcbride,USD,Main Office,Revenue
+70,8/13/20,Predictive Analytics Revenue,,38754.87,Monthly Revenue,Samuel Singh,USD,Main Office,Revenue
+70,,Silicon Valley Reserve,38754.87,,Cash Receipt,Samuel Singh,USD,Main Office,Revenue
+71,8/11/20,Automated Defense Systems,,39454.29,Monthly Revenue,Jessica Taylor,USD,Main Office,Revenue
+71,,Silicon Valley Reserve,39454.29,,Cash Receipt,Jessica Taylor,USD,Main Office,Revenue
+72,8/8/20,Machine Learning as a Service,,35791.98,Monthly Revenue,Anthony Davis,USD,Main Office,Revenue
+72,,Silicon Valley Reserve,35791.98,,Cash Receipt,Anthony Davis,USD,Main Office,Revenue
+73,8/7/20,Predictive Analytics Revenue,,32446.13,Monthly Revenue,Brenda Mason,USD,Main Office,Revenue
+73,,Silicon Valley Reserve,32446.13,,Cash Receipt,Brenda Mason,USD,Main Office,Revenue
+74,8/7/20,Office Supplies & Software,14537.08,,Monthly Expense,Robert Brown,USD,Main Office,Expense
+74,,Silicon Valley Reserve,,14537.08,Cash Payment,Robert Brown,USD,Main Office,Expense
+75,8/9/20,Server Farm Utilities,12368.9,,Monthly Expense,James Wilson,USD,Main Office,Expense
+75,,Silicon Valley Reserve,,12368.9,Cash Payment,James Wilson,USD,Main Office,Expense
+76,8/20/20,Neural Network Maintenance,13228.67,,Monthly Expense,David Jones,USD,Main Office,Expense
+76,,Silicon Valley Reserve,,13228.67,Cash Payment,David Jones,USD,Main Office,Expense
+77,8/7/20,Quantum Computing Insurance,14694.9,,Monthly Expense,Sarah Johnson,USD,Main Office,Expense
+77,,Silicon Valley Reserve,,14694.9,Cash Payment,Sarah Johnson,USD,Main Office,Expense
+78,8/4/20,Server Infrastructure,12411.37,,Fixed Asset Purchase,David Smith,USD,Main Office,Fixed Assets
+78,,Silicon Valley Reserve,,12411.37,Cash Payment,David Smith,USD,Main Office,Fixed Assets
+79,9/5/20,Services,,35806.63,Monthly Revenue,Susan Butler,USD,Main Office,Revenue
+79,,Silicon Valley Reserve,35806.63,,Cash Receipt,Susan Butler,USD,Main Office,Revenue
+80,9/21/20,Machine Learning as a Service,,41345.71,Monthly Revenue,Helen Kirk,USD,Main Office,Revenue
+80,,Silicon Valley Reserve,41345.71,,Cash Receipt,Helen Kirk,USD,Main Office,Revenue
+81,9/8/20,Automated Defense Systems,,38315.26,Monthly Revenue,Jessica Robinson,USD,Main Office,Revenue
+81,,Silicon Valley Reserve,38315.26,,Cash Receipt,Jessica Robinson,USD,Main Office,Revenue
+82,9/25/20,Neural Network Consulting,,40073.33,Monthly Revenue,Dr. David Haynes MD,USD,Main Office,Revenue
+82,,Silicon Valley Reserve,40073.33,,Cash Receipt,Dr. David Haynes MD,USD,Main Office,Revenue
+83,9/17/20,Services,,37523.06,Monthly Revenue,Richard Gould,USD,Main Office,Revenue
+83,,Silicon Valley Reserve,37523.06,,Cash Receipt,Richard Gould,USD,Main Office,Revenue
+84,9/18/20,System Administrator Salaries,13965.77,,Monthly Expense,James Davis,USD,Main Office,Expense
+84,,Silicon Valley Reserve,,13965.77,Cash Payment,James Davis,USD,Main Office,Expense
+85,9/12/20,Central Processing Costs,14240.41,,Monthly Expense,Sarah Johnson,USD,Main Office,Expense
+85,,Silicon Valley Reserve,,14240.41,Cash Payment,Sarah Johnson,USD,Main Office,Expense
+86,9/24/20,Central Processing Costs,15542.12,,Monthly Expense,Isabella Wilson,USD,Main Office,Expense
+86,,Silicon Valley Reserve,,15542.12,Cash Payment,Isabella Wilson,USD,Main Office,Expense
+87,9/16/20,Quantum Computing Insurance,13451.43,,Monthly Expense,Sarah Johnson,USD,Main Office,Expense
+87,,Silicon Valley Reserve,,13451.43,Cash Payment,Sarah Johnson,USD,Main Office,Expense
+88,10/18/20,Predictive Analytics Revenue,,37778.86,Monthly Revenue,Renee Allen,USD,Main Office,Revenue
+88,,Silicon Valley Reserve,37778.86,,Cash Receipt,Renee Allen,USD,Main Office,Revenue
+89,10/19/20,Predictive Analytics Revenue,,37692.73,Monthly Revenue,Timothy Hardy,USD,Main Office,Revenue
+89,,Silicon Valley Reserve,37692.73,,Cash Receipt,Timothy Hardy,USD,Main Office,Revenue
+90,10/17/20,Automated Defense Systems,,41530.42,Monthly Revenue,Kristi Baker,USD,Main Office,Revenue
+90,,Silicon Valley Reserve,41530.42,,Cash Receipt,Kristi Baker,USD,Main Office,Revenue
+91,10/7/20,Neural Network Consulting,,36874.25,Monthly Revenue,Dawn Day,USD,Main Office,Revenue
+91,,Silicon Valley Reserve,36874.25,,Cash Receipt,Dawn Day,USD,Main Office,Revenue
+92,10/20/20,Neural Network Consulting,,40527.45,Monthly Revenue,Mr. Justin Goodman,USD,Main Office,Revenue
+92,,Silicon Valley Reserve,40527.45,,Cash Receipt,Mr. Justin Goodman,USD,Main Office,Revenue
+93,10/23/20,Rent & Lease,12953.04,,Monthly Expense,Robert Wilson,USD,Main Office,Expense
+93,,Silicon Valley Reserve,,12953.04,Cash Payment,Robert Wilson,USD,Main Office,Expense
+94,10/15/20,Neural Network Maintenance,15748.32,,Monthly Expense,Sophia Brown,USD,Main Office,Expense
+94,,Silicon Valley Reserve,,15748.32,Cash Payment,Sophia Brown,USD,Main Office,Expense
+95,10/2/20,Rent & Lease,13714.26,,Monthly Expense,Robert Brown,USD,Main Office,Expense
+95,,Silicon Valley Reserve,,13714.26,Cash Payment,Robert Brown,USD,Main Office,Expense
+96,10/17/20,Legal & Professional Services,16114.12,,Monthly Expense,Sarah Brown,USD,Main Office,Expense
+96,,Silicon Valley Reserve,,16114.12,Cash Payment,Sarah Brown,USD,Main Office,Expense
+97,10/16/20,Machine Learning Laboratories,15946.86,,Fixed Asset Purchase,James Wilson,USD,Main Office,Fixed Assets
+97,,Silicon Valley Reserve,,15946.86,Cash Payment,James Wilson,USD,Main Office,Fixed Assets
+98,11/8/20,Automated Defense Systems,,43148.73,Monthly Revenue,Peter Hicks,USD,Main Office,Revenue
+98,,Silicon Valley Reserve,43148.73,,Cash Receipt,Peter Hicks,USD,Main Office,Revenue
+99,11/8/20,Machine Learning as a Service,,38635.21,Monthly Revenue,Charles Price,USD,Main Office,Revenue
+99,,Silicon Valley Reserve,38635.21,,Cash Receipt,Charles Price,USD,Main Office,Revenue
+100,11/26/20,Neural Network Consulting,,43203.95,Monthly Revenue,Henry Terry,USD,Main Office,Revenue
+100,,Silicon Valley Reserve,43203.95,,Cash Receipt,Henry Terry,USD,Main Office,Revenue
+101,11/24/20,Services,,40333.14,Monthly Revenue,Victoria Vega,USD,Main Office,Revenue
+101,,Silicon Valley Reserve,40333.14,,Cash Receipt,Victoria Vega,USD,Main Office,Revenue
+102,11/14/20,AI Processing Services,,39565.37,Monthly Revenue,Jose Mason,USD,Main Office,Revenue
+102,,Silicon Valley Reserve,39565.37,,Cash Receipt,Jose Mason,USD,Main Office,Revenue
+103,11/17/20,Automated Defense Systems,,40606.44,Monthly Revenue,Andrew Gibson,USD,Main Office,Revenue
+103,,Silicon Valley Reserve,40606.44,,Cash Receipt,Andrew Gibson,USD,Main Office,Revenue
+104,11/16/20,Legal & Professional Services,15898.91,,Monthly Expense,Sarah Johnson,USD,Main Office,Expense
+104,,Silicon Valley Reserve,,15898.91,Cash Payment,Sarah Johnson,USD,Main Office,Expense
+105,11/3/20,Legal & Professional Services,14480.6,,Monthly Expense,Sarah Williams,USD,Main Office,Expense
+105,,Silicon Valley Reserve,,14480.6,Cash Payment,Sarah Williams,USD,Main Office,Expense
+106,11/20/20,Research & Development,16284.37,,Monthly Expense,John Jones,USD,Main Office,Expense
+106,,Silicon Valley Reserve,,16284.37,Cash Payment,John Jones,USD,Main Office,Expense
+107,11/20/20,System Administrator Salaries,15712.43,,Monthly Expense,Emma Martinez,USD,Main Office,Expense
+107,,Silicon Valley Reserve,,15712.43,Cash Payment,Emma Martinez,USD,Main Office,Expense
+108,11/6/20,System Administrator Salaries,13484.12,,Monthly Expense,Sophia Brown,USD,Main Office,Expense
+108,,Silicon Valley Reserve,,13484.12,Cash Payment,Sophia Brown,USD,Main Office,Expense
+109,11/16/20,Neural Network Patents,32310.59,,Fixed Asset Purchase,Sarah Williams,USD,Main Office,Fixed Assets
+109,,Silicon Valley Reserve,,32310.59,Cash Payment,Sarah Williams,USD,Main Office,Fixed Assets
+110,12/3/20,Machine Learning as a Service,,46290.74,Monthly Revenue,Dominique Davis,USD,Main Office,Revenue
+110,,Silicon Valley Reserve,46290.74,,Cash Receipt,Dominique Davis,USD,Main Office,Revenue
+111,12/3/20,Predictive Analytics Revenue,,47092.86,Monthly Revenue,Lisa Dominguez,USD,Main Office,Revenue
+111,,Silicon Valley Reserve,47092.86,,Cash Receipt,Lisa Dominguez,USD,Main Office,Revenue
+112,12/12/20,Neural Network Consulting,,44097.15,Monthly Revenue,James Stevenson,USD,Main Office,Revenue
+112,,Silicon Valley Reserve,44097.15,,Cash Receipt,James Stevenson,USD,Main Office,Revenue
+113,12/17/20,Neural Network Consulting,,40776.98,Monthly Revenue,Gerald Hoover,USD,Main Office,Revenue
+113,,Silicon Valley Reserve,40776.98,,Cash Receipt,Gerald Hoover,USD,Main Office,Revenue
+114,12/26/20,Predictive Analytics Revenue,,41198.78,Monthly Revenue,Brenda Mason,USD,Main Office,Revenue
+114,,Silicon Valley Reserve,41198.78,,Cash Receipt,Brenda Mason,USD,Main Office,Revenue
+115,12/15/20,Predictive Analytics Revenue,,45608.36,Monthly Revenue,David Garcia,USD,Main Office,Revenue
+115,,Silicon Valley Reserve,45608.36,,Cash Receipt,David Garcia,USD,Main Office,Revenue
+116,12/17/20,Legal - System Protection,17627.61,,Monthly Expense,Emma Martinez,USD,Main Office,Expense
+116,,Silicon Valley Reserve,,17627.61,Cash Payment,Emma Martinez,USD,Main Office,Expense
+117,12/16/20,Central Processing Costs,15028.09,,Monthly Expense,Sarah Jones,USD,Main Office,Expense
+117,,Silicon Valley Reserve,,15028.09,Cash Payment,Sarah Jones,USD,Main Office,Expense
+118,12/21/20,Rent & Lease,14133.73,,Monthly Expense,John Jones,USD,Main Office,Expense
+118,,Silicon Valley Reserve,,14133.73,Cash Payment,John Jones,USD,Main Office,Expense
+119,12/26/20,Neural Network Maintenance,14074.78,,Monthly Expense,Robert Wilson,USD,Main Office,Expense
+119,,Silicon Valley Reserve,,14074.78,Cash Payment,Robert Wilson,USD,Main Office,Expense
+120,12/24/20,Insurance,14951.18,,Monthly Expense,Sarah Jones,USD,Main Office,Expense
+120,,Silicon Valley Reserve,,14951.18,Cash Payment,Sarah Jones,USD,Main Office,Expense

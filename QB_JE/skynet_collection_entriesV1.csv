@@ -1,0 +1,17 @@
+JournalNo,JournalDate,AccountName,Debits,Credits,Description,Name,Currency,Location,Class
+800,2/22/20,Silicon Valley Reserve,10791.71,,Collection of JE #8,Hannah Schwartz,USD,Main Office,Revenue
+800,2/22/20,Client Receivables,,10791.71,Collection of JE #8,Hannah Schwartz,USD,Main Office,Revenue
+801,3/19/20,Silicon Valley Reserve,31104.25,,Collection of JE #15,Henry Terry,USD,Main Office,Revenue
+801,3/19/20,Client Receivables,,31104.25,Collection of JE #15,Henry Terry,USD,Main Office,Revenue
+802,3/16/20,Silicon Valley Reserve,45149.08,,Collection of JE #1,Donna Thompson,USD,Main Office,Revenue
+802,3/16/20,Client Receivables,,45149.08,Collection of JE #1,Donna Thompson,USD,Main Office,Revenue
+803,4/6/20,Silicon Valley Reserve,38094.3,,Collection of JE #17,Michelle Bridges,USD,Main Office,Revenue
+803,4/6/20,Client Receivables,,38094.3,Collection of JE #17,Michelle Bridges,USD,Main Office,Revenue
+804,3/23/20,Silicon Valley Reserve,48687.56,,Collection of JE #9,Renee Allen,USD,Main Office,Revenue
+804,3/23/20,Client Receivables,,48687.56,Collection of JE #9,Renee Allen,USD,Main Office,Revenue
+805,1/9/25,Silicon Valley Reserve,128939.83,,Collection of Invoice #75312299,Timothy Mccarthy,USD,Main Office,Revenue
+805,1/9/25,Client Receivables,,128939.83,Collection of Invoice #75312299,Timothy Mccarthy,USD,Main Office,Revenue
+806,2/26/25,Silicon Valley Reserve,64586.94,,Collection of JE #699,Kathryn Clark,USD,Main Office,Revenue
+806,2/26/25,Client Receivables,,64586.94,Collection of JE #699,Kathryn Clark,USD,Main Office,Revenue
+807,3/24/25,Silicon Valley Reserve,62429.61,,Collection of JE #700,Donna Thompson,USD,Main Office,Revenue
+807,3/24/25,Client Receivables,,62429.61,Collection of JE #700,Donna Thompson,USD,Main Office,Revenue

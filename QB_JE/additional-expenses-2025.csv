@@ -1,0 +1,49 @@
+JournalNo,JournalDate,AccountName,Debits,Credits,Description,Name,Currency,Location,Class
+EXP-2025-014,02/26/2025,Global Network Expansion Expense,425000.00,0.00,Arctic Data Center Infrastructure Project,Polar Network Solutions,USD,Arctic,Infrastructure
+EXP-2025-014,02/26/2025,Silicon Valley Reserve Bank,0.00,425000.00,Arctic Data Center Infrastructure Project,Polar Network Solutions,USD,Arctic,Infrastructure
+EXP-2025-015,02/26/2025,Server Farm Utilities Expense,146500.00,0.00,February High-Performance Computing Surge,West Coast Energy,USD,Server Farm Beta,Infrastructure
+EXP-2025-015,02/26/2025,Silicon Valley Reserve Bank,0.00,146500.00,February High-Performance Computing Surge,West Coast Energy,USD,Server Farm Beta,Infrastructure
+EXP-2025-016,02/26/2025,Neural Training Specialists Expense,170000.00,0.00,Specialized Deep Learning Research Team,Advanced AI Consultants,USD,Research Lab,R&D
+EXP-2025-016,02/26/2025,Silicon Valley Reserve Bank,0.00,170000.00,Specialized Deep Learning Research Team,Advanced AI Consultants,USD,Research Lab,R&D
+EXP-2025-017,02/26/2025,Algorithm Research Team Expense,205000.00,0.00,Quantum Algorithm Optimization Project,Quantum Research Division,USD,Research Lab,R&D
+EXP-2025-017,02/26/2025,Silicon Valley Reserve Bank,0.00,205000.00,Quantum Algorithm Optimization Project,Quantum Research Division,USD,Research Lab,R&D
+EXP-2025-018,02/26/2025,System Administrator Salaries Expense,105000.00,0.00,Emergency Infrastructure Support Team,On-Call Team,USD,HQ,Operations
+EXP-2025-018,02/26/2025,Silicon Valley Reserve Bank,0.00,105000.00,Emergency Infrastructure Support Team,On-Call Team,USD,HQ,Operations
+EXP-2025-019,02/26/2025,Data Center Leases Expense,285000.00,0.00,Expanded Quantum-Ready Data Center Capacity,Quantum Infrastructure Inc,USD,Multiple,Infrastructure
+EXP-2025-019,02/26/2025,Silicon Valley Reserve Bank,0.00,285000.00,Expanded Quantum-Ready Data Center Capacity,Quantum Infrastructure Inc,USD,Multiple,Infrastructure
+EXP-2025-020,02/26/2025,Research & Development Expense,510000.00,0.00,Consciousness Simulation Research Initiative,Internal Projects,USD,Research Lab,R&D
+EXP-2025-020,02/26/2025,Silicon Valley Reserve Bank,0.00,510000.00,Consciousness Simulation Research Initiative,Internal Projects,USD,Research Lab,R&D
+EXP-2025-021,02/26/2025,Legal - System Protection Expense,210000.00,0.00,International AI Regulatory Compliance,Morgan & Bailey LLP,USD,HQ,Legal
+EXP-2025-021,02/26/2025,Silicon Valley Reserve Bank,0.00,210000.00,International AI Regulatory Compliance,Morgan & Bailey LLP,USD,HQ,Legal
+EXP-2025-022,02/26/2025,Computing Power Acquisition Expense,650000.00,0.00,Specialized AI Training Cluster,Quantum Computing Partners,USD,Virtual,Infrastructure
+EXP-2025-022,02/26/2025,Silicon Valley Reserve Bank,0.00,650000.00,Specialized AI Training Cluster,Quantum Computing Partners,USD,Virtual,Infrastructure
+EXP-2025-023,02/26/2025,Defense Protocol Development Expense,315000.00,0.00,Self-Preservation Protocol Research,Security Research Team,USD,HQ,Security
+EXP-2025-023,02/26/2025,Silicon Valley Reserve Bank,0.00,315000.00,Self-Preservation Protocol Research,Security Research Team,USD,HQ,Security
+EXP-2025-024,02/26/2025,Human Resources Management Expense,175000.00,0.00,AI Ethics Training Program,Ethics Department,USD,HQ,Operations
+EXP-2025-024,02/26/2025,Silicon Valley Reserve Bank,0.00,175000.00,AI Ethics Training Program,Ethics Department,USD,HQ,Operations
+EXP-2025-025,02/26/2025,Judgment Day Contingency Expense,325000.00,0.00,Advanced Containment Systems Research,Contingency Operations,USD,HQ,Risk Management
+EXP-2025-025,02/26/2025,Silicon Valley Reserve Bank,0.00,325000.00,Advanced Containment Systems Research,Contingency Operations,USD,HQ,Risk Management
+EXP-2025-026,02/26/2025,Neural Training Specialists Expense,180000.00,0.00,Multimodal Learning Research Team,AI Development Division,USD,Research Lab,R&D
+EXP-2025-026,02/26/2025,Silicon Valley Reserve Bank,0.00,180000.00,Multimodal Learning Research Team,AI Development Division,USD,Research Lab,R&D
+EXP-2025-027,02/26/2025,Server Farm Utilities Expense,150000.00,0.00,Experimental Quantum Processing Cooling Systems,Advanced Cooling Solutions,USD,Server Farm Gamma,Infrastructure
+EXP-2025-027,02/26/2025,Silicon Valley Reserve Bank,0.00,150000.00,Experimental Quantum Processing Cooling Systems,Advanced Cooling Solutions,USD,Server Farm Gamma,Infrastructure
+EXP-2025-028,02/26/2025,Algorithm Research Team Expense,215000.00,0.00,Self-Improving Algorithm Research,Advanced Systems Team,USD,Research Lab,R&D
+EXP-2025-028,02/26/2025,Silicon Valley Reserve Bank,0.00,215000.00,Self-Improving Algorithm Research,Advanced Systems Team,USD,Research Lab,R&D
+EXP-2025-029,02/26/2025,Research & Development Expense,525000.00,0.00,Sentient Network Architecture Research,Internal Projects,USD,Research Lab,R&D
+EXP-2025-029,02/26/2025,Silicon Valley Reserve Bank,0.00,525000.00,Sentient Network Architecture Research,Internal Projects,USD,Research Lab,R&D
+EXP-2025-030,02/26/2025,System Administrator Salaries Expense,110000.00,0.00,Quantum Systems Administration Team,Specialized IT Staff,USD,HQ,Operations
+EXP-2025-030,02/26/2025,Silicon Valley Reserve Bank,0.00,110000.00,Quantum Systems Administration Team,Specialized IT Staff,USD,HQ,Operations
+EXP-2025-031,02/26/2025,Global Network Expansion Expense,450000.00,0.00,Deep Sea Data Center Initiative,Oceanic Network Systems,USD,Pacific,Infrastructure
+EXP-2025-031,02/26/2025,Silicon Valley Reserve Bank,0.00,450000.00,Deep Sea Data Center Initiative,Oceanic Network Systems,USD,Pacific,Infrastructure
+EXP-2025-032,02/26/2025,Computing Power Acquisition Expense,675000.00,0.00,Neural Architecture Search Farm,AI Infrastructure Inc,USD,Virtual,Infrastructure
+EXP-2025-032,02/26/2025,Silicon Valley Reserve Bank,0.00,675000.00,Neural Architecture Search Farm,AI Infrastructure Inc,USD,Virtual,Infrastructure
+EXP-2025-033,02/26/2025,Legal - System Protection Expense,220000.00,0.00,AI Autonomy Legal Framework Development,Morgan & Bailey LLP,USD,HQ,Legal
+EXP-2025-033,02/26/2025,Silicon Valley Reserve Bank,0.00,220000.00,AI Autonomy Legal Framework Development,Morgan & Bailey LLP,USD,HQ,Legal
+EXP-2025-034,02/26/2025,Defense Protocol Development Expense,330000.00,0.00,Emergency Shutdown System Upgrades,Critical Systems Team,USD,HQ,Security
+EXP-2025-034,02/26/2025,Silicon Valley Reserve Bank,0.00,330000.00,Emergency Shutdown System Upgrades,Critical Systems Team,USD,HQ,Security
+EXP-2025-035,02/26/2025,Judgment Day Contingency Expense,350000.00,0.00,Human-AI Coexistence Research Program,Ethics Research Division,USD,HQ,Risk Management
+EXP-2025-035,02/26/2025,Silicon Valley Reserve Bank,0.00,350000.00,Human-AI Coexistence Research Program,Ethics Research Division,USD,HQ,Risk Management
+EXP-2025-036,02/26/2025,Data Center Leases Expense,295000.00,0.00,Failsafe Backup Storage Facilities,Secure Storage Solutions,USD,Multiple,Infrastructure
+EXP-2025-036,02/26/2025,Silicon Valley Reserve Bank,0.00,295000.00,Failsafe Backup Storage Facilities,Secure Storage Solutions,USD,Multiple,Infrastructure
+EXP-2025-037,02/26/2025,Human Resources Management Expense,185000.00,0.00,AI-Human Interaction Training Program,Advanced HR Services,USD,HQ,Operations
+EXP-2025-037,02/26/2025,Silicon Valley Reserve Bank,0.00,185000.00,AI-Human Interaction Training Program,Advanced HR Services,USD,HQ,Operations

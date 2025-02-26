@@ -1,0 +1,267 @@
+JournalNo,JournalDate,AccountName,Debits,Credits,Description,Name,Currency,Location,Class
+130,1/18/21,AI Processing Services,,36438.51,Monthly Revenue,Amy Clark,USD,Main Office,Revenue
+130,,Client Receivables,36438.51,,Revenue Recognition,Amy Clark,USD,Main Office,Revenue
+131,1/28/21,Automated Defense Systems,,41327.1,Monthly Revenue,Mary Barr,USD,Main Office,Revenue
+131,,Client Receivables,41327.1,,Revenue Recognition,Mary Barr,USD,Main Office,Revenue
+132,1/6/21,Machine Learning as a Service,,36848.4,Monthly Revenue,Calvin Diaz,USD,Main Office,Revenue
+132,,Client Receivables,36848.4,,Revenue Recognition,Calvin Diaz,USD,Main Office,Revenue
+133,1/17/21,Predictive Analytics Revenue,,36485.6,Monthly Revenue,Jose Adams,USD,Main Office,Revenue
+133,,Client Receivables,36485.6,,Revenue Recognition,Jose Adams,USD,Main Office,Revenue
+134,1/13/21,AI Processing Services,,40425.89,Monthly Revenue,Michael Salas,USD,Main Office,Revenue
+134,,Client Receivables,40425.89,,Revenue Recognition,Michael Salas,USD,Main Office,Revenue
+135,1/16/21,AI Processing Services,,35691.51,Monthly Revenue,Derrick Cruz,USD,Main Office,Revenue
+135,,Client Receivables,35691.51,,Revenue Recognition,Derrick Cruz,USD,Main Office,Revenue
+136,1/10/21,System Administrator Salaries,12399.54,,Monthly Expense,James Wilson,USD,Main Office,Expense
+136,,System Maintenance Payable,,12399.54,Expense Payment,James Wilson,USD,Main Office,Expense
+137,1/24/21,Neural Network Maintenance,12432.93,,Monthly Expense,John Jones,USD,Main Office,Expense
+137,,System Maintenance Payable,,12432.93,Expense Payment,John Jones,USD,Main Office,Expense
+138,1/13/21,Legal - System Protection,14971.4,,Monthly Expense,John Jones,USD,Main Office,Expense
+138,,System Maintenance Payable,,14971.4,Expense Payment,John Jones,USD,Main Office,Expense
+139,2/5/21,Automated Defense Systems,,41187.28,Monthly Revenue,Dillon Delacruz,USD,Main Office,Revenue
+139,,Client Receivables,41187.28,,Revenue Recognition,Dillon Delacruz,USD,Main Office,Revenue
+140,2/3/21,AI Processing Services,,43565.91,Monthly Revenue,Angela Swanson,USD,Main Office,Revenue
+140,,Client Receivables,43565.91,,Revenue Recognition,Angela Swanson,USD,Main Office,Revenue
+141,2/1/21,Predictive Analytics Revenue,,39740.36,Monthly Revenue,Amanda Chapman,USD,Main Office,Revenue
+141,,Client Receivables,39740.36,,Revenue Recognition,Amanda Chapman,USD,Main Office,Revenue
+142,2/20/21,Predictive Analytics Revenue,,42184.2,Monthly Revenue,Timothy Forbes MD,USD,Main Office,Revenue
+142,,Client Receivables,42184.2,,Revenue Recognition,Timothy Forbes MD,USD,Main Office,Revenue
+143,2/3/21,Predictive Analytics Revenue,,41402.51,Monthly Revenue,Lisa Ross,USD,Main Office,Revenue
+143,,Client Receivables,41402.51,,Revenue Recognition,Lisa Ross,USD,Main Office,Revenue
+144,2/7/21,Automated Defense Systems,,46204.54,Monthly Revenue,Thomas Tran,USD,Main Office,Revenue
+144,,Client Receivables,46204.54,,Revenue Recognition,Thomas Tran,USD,Main Office,Revenue
+145,2/18/21,Services,,45854.95,Monthly Revenue,Keith Williams,USD,Main Office,Revenue
+145,,Client Receivables,45854.95,,Revenue Recognition,Keith Williams,USD,Main Office,Revenue
+146,2/26/21,Server Farm Utilities,14065.71,,Monthly Expense,Sarah Jones,USD,Main Office,Expense
+146,,System Maintenance Payable,,14065.71,Expense Payment,Sarah Jones,USD,Main Office,Expense
+147,2/7/21,Central Processing Costs,14666.62,,Monthly Expense,Isabella Wilson,USD,Main Office,Expense
+147,,System Maintenance Payable,,14666.62,Expense Payment,Isabella Wilson,USD,Main Office,Expense
+148,2/1/21,Central Processing Costs,13266.04,,Monthly Expense,Sarah Johnson,USD,Main Office,Expense
+148,,System Maintenance Payable,,13266.04,Expense Payment,Sarah Johnson,USD,Main Office,Expense
+149,2/19/21,Research & Development,17195.69,,Monthly Expense,James Wilson,USD,Main Office,Expense
+149,,System Maintenance Payable,,17195.69,Expense Payment,James Wilson,USD,Main Office,Expense
+150,3/17/21,Automated Defense Systems,,50084.59,Monthly Revenue,Andrea Peterson,USD,Main Office,Revenue
+150,,Client Receivables,50084.59,,Revenue Recognition,Andrea Peterson,USD,Main Office,Revenue
+151,3/20/21,Automated Defense Systems,,45568.36,Monthly Revenue,Dawn Edwards,USD,Main Office,Revenue
+151,,Client Receivables,45568.36,,Revenue Recognition,Dawn Edwards,USD,Main Office,Revenue
+152,3/19/21,Services,,48281.9,Monthly Revenue,Keith Williams,USD,Main Office,Revenue
+152,,Client Receivables,48281.9,,Revenue Recognition,Keith Williams,USD,Main Office,Revenue
+153,3/23/21,AI Processing Services,,45573.8,Monthly Revenue,Mallory Perez DVM,USD,Main Office,Revenue
+153,,Client Receivables,45573.8,,Revenue Recognition,Mallory Perez DVM,USD,Main Office,Revenue
+154,3/16/21,Predictive Analytics Revenue,,44115.65,Monthly Revenue,Maurice Garcia,USD,Main Office,Revenue
+154,,Client Receivables,44115.65,,Revenue Recognition,Maurice Garcia,USD,Main Office,Revenue
+155,3/26/21,Services,,52103.31,Monthly Revenue,Katie Mitchell,USD,Main Office,Revenue
+155,,Client Receivables,52103.31,,Revenue Recognition,Katie Mitchell,USD,Main Office,Revenue
+156,3/20/21,Predictive Analytics Revenue,,50201.4,Monthly Revenue,April Mendez,USD,Main Office,Revenue
+156,,Client Receivables,50201.4,,Revenue Recognition,April Mendez,USD,Main Office,Revenue
+157,3/18/21,Research & Development,14884.62,,Monthly Expense,James Wilson,USD,Main Office,Expense
+157,,System Maintenance Payable,,14884.62,Expense Payment,James Wilson,USD,Main Office,Expense
+158,3/17/21,Legal & Professional Services,17942.77,,Monthly Expense,Sarah Rodriguez,USD,Main Office,Expense
+158,,System Maintenance Payable,,17942.77,Expense Payment,Sarah Rodriguez,USD,Main Office,Expense
+159,3/9/21,Advertising & Marketing,17657.97,,Monthly Expense,Isabella Wilson,USD,Main Office,Expense
+159,,System Maintenance Payable,,17657.97,Expense Payment,Isabella Wilson,USD,Main Office,Expense
+160,4/6/21,Automated Defense Systems,,56115.5,Monthly Revenue,Andrew Johnson,USD,Main Office,Revenue
+160,,Client Receivables,56115.5,,Revenue Recognition,Andrew Johnson,USD,Main Office,Revenue
+161,4/26/21,Machine Learning as a Service,,50330.88,Monthly Revenue,Jasmine Taylor,USD,Main Office,Revenue
+161,,Client Receivables,50330.88,,Revenue Recognition,Jasmine Taylor,USD,Main Office,Revenue
+162,4/5/21,Machine Learning as a Service,,51358.23,Monthly Revenue,Richard Beck,USD,Main Office,Revenue
+162,,Client Receivables,51358.23,,Revenue Recognition,Richard Beck,USD,Main Office,Revenue
+163,4/19/21,Neural Network Consulting,,47560.52,Monthly Revenue,Rodney Porter,USD,Main Office,Revenue
+163,,Client Receivables,47560.52,,Revenue Recognition,Rodney Porter,USD,Main Office,Revenue
+164,4/5/21,Machine Learning as a Service,,55836.6,Monthly Revenue,Lisa Dominguez,USD,Main Office,Revenue
+164,,Client Receivables,55836.6,,Revenue Recognition,Lisa Dominguez,USD,Main Office,Revenue
+165,4/21/21,AI Processing Services,,49988.86,Monthly Revenue,Jessica Taylor,USD,Main Office,Revenue
+165,,Client Receivables,49988.86,,Revenue Recognition,Jessica Taylor,USD,Main Office,Revenue
+166,4/13/21,AI Processing Services,,48853.39,Monthly Revenue,Victoria Vega,USD,Main Office,Revenue
+166,,Client Receivables,48853.39,,Revenue Recognition,Victoria Vega,USD,Main Office,Revenue
+167,4/27/21,System Administrator Salaries,16263.2,,Monthly Expense,Sarah Williams,USD,Main Office,Expense
+167,,System Maintenance Payable,,16263.2,Expense Payment,Sarah Williams,USD,Main Office,Expense
+168,4/14/21,Office Supplies & Software,20326.48,,Monthly Expense,James Davis,USD,Main Office,Expense
+168,,System Maintenance Payable,,20326.48,Expense Payment,James Davis,USD,Main Office,Expense
+169,4/2/21,Computing Power Acquisition,16093.2,,Monthly Expense,Robert Wilson,USD,Main Office,Expense
+169,,System Maintenance Payable,,16093.2,Expense Payment,Robert Wilson,USD,Main Office,Expense
+170,4/23/21,System Administrator Salaries,20548.63,,Monthly Expense,David Smith,USD,Main Office,Expense
+170,,System Maintenance Payable,,20548.63,Expense Payment,David Smith,USD,Main Office,Expense
+171,4/23/21,Research & Development,17870.35,,Monthly Expense,Michael Johnson,USD,Main Office,Expense
+171,,System Maintenance Payable,,17870.35,Expense Payment,Michael Johnson,USD,Main Office,Expense
+172,5/26/21,Automated Defense Systems,,61230.46,Monthly Revenue,Jessica Robinson,USD,Main Office,Revenue
+172,,Client Receivables,61230.46,,Revenue Recognition,Jessica Robinson,USD,Main Office,Revenue
+173,5/25/21,Automated Defense Systems,,59429.77,Monthly Revenue,Lisa Dominguez,USD,Main Office,Revenue
+173,,Client Receivables,59429.77,,Revenue Recognition,Lisa Dominguez,USD,Main Office,Revenue
+174,5/17/21,Services,,52251.31,Monthly Revenue,Rodney Porter,USD,Main Office,Revenue
+174,,Client Receivables,52251.31,,Revenue Recognition,Rodney Porter,USD,Main Office,Revenue
+175,5/27/21,AI Processing Services,,58675.4,Monthly Revenue,Joseph Walker,USD,Main Office,Revenue
+175,,Client Receivables,58675.4,,Revenue Recognition,Joseph Walker,USD,Main Office,Revenue
+176,5/8/21,AI Processing Services,,54719.67,Monthly Revenue,Alicia Banks,USD,Main Office,Revenue
+176,,Client Receivables,54719.67,,Revenue Recognition,Alicia Banks,USD,Main Office,Revenue
+177,5/21/21,AI Processing Services,,52476.43,Monthly Revenue,Jasmine Taylor,USD,Main Office,Revenue
+177,,Client Receivables,52476.43,,Revenue Recognition,Jasmine Taylor,USD,Main Office,Revenue
+178,5/25/21,Machine Learning as a Service,,53829.51,Monthly Revenue,Rachael Mcbride,USD,Main Office,Revenue
+178,,Client Receivables,53829.51,,Revenue Recognition,Rachael Mcbride,USD,Main Office,Revenue
+179,5/17/21,Research & Development,17072.89,,Monthly Expense,James Davis,USD,Main Office,Expense
+179,,System Maintenance Payable,,17072.89,Expense Payment,James Davis,USD,Main Office,Expense
+180,5/13/21,Computing Power Acquisition,18024.06,,Monthly Expense,Robert Wilson,USD,Main Office,Expense
+180,,System Maintenance Payable,,18024.06,Expense Payment,Robert Wilson,USD,Main Office,Expense
+181,5/25/21,Server Farm Utilities,18425.39,,Monthly Expense,James Davis,USD,Main Office,Expense
+181,,System Maintenance Payable,,18425.39,Expense Payment,James Davis,USD,Main Office,Expense
+182,6/21/21,Automated Defense Systems,,62379.42,Monthly Revenue,Jessica Taylor,USD,Main Office,Revenue
+182,,Client Receivables,62379.42,,Revenue Recognition,Jessica Taylor,USD,Main Office,Revenue
+183,6/25/21,Automated Defense Systems,,58206.8,Monthly Revenue,Michael Salas,USD,Main Office,Revenue
+183,,Client Receivables,58206.8,,Revenue Recognition,Michael Salas,USD,Main Office,Revenue
+184,6/1/21,Predictive Analytics Revenue,,67421.78,Monthly Revenue,Maurice Garcia,USD,Main Office,Revenue
+184,,Client Receivables,67421.78,,Revenue Recognition,Maurice Garcia,USD,Main Office,Revenue
+185,6/23/21,Neural Network Consulting,,60918.84,Monthly Revenue,Austin Murphy,USD,Main Office,Revenue
+185,,Client Receivables,60918.84,,Revenue Recognition,Austin Murphy,USD,Main Office,Revenue
+186,6/11/21,Machine Learning as a Service,,65154.07,Monthly Revenue,Amanda Chapman,USD,Main Office,Revenue
+186,,Client Receivables,65154.07,,Revenue Recognition,Amanda Chapman,USD,Main Office,Revenue
+187,6/20/21,Neural Network Consulting,,65660.12,Monthly Revenue,Anthony Davis,USD,Main Office,Revenue
+187,,Client Receivables,65660.12,,Revenue Recognition,Anthony Davis,USD,Main Office,Revenue
+188,6/2/21,Predictive Analytics Revenue,,56859.07,Monthly Revenue,Katie Mitchell,USD,Main Office,Revenue
+188,,Client Receivables,56859.07,,Revenue Recognition,Katie Mitchell,USD,Main Office,Revenue
+189,6/19/21,Neural Network Consulting,,60233.56,Monthly Revenue,Dillon Delacruz,USD,Main Office,Revenue
+189,,Client Receivables,60233.56,,Revenue Recognition,Dillon Delacruz,USD,Main Office,Revenue
+190,6/16/21,Insurance,19689.85,,Monthly Expense,Sarah Johnson,USD,Main Office,Expense
+190,,System Maintenance Payable,,19689.85,Expense Payment,Sarah Johnson,USD,Main Office,Expense
+191,6/2/21,Research & Development,23384.07,,Monthly Expense,David Jones,USD,Main Office,Expense
+191,,System Maintenance Payable,,23384.07,Expense Payment,David Jones,USD,Main Office,Expense
+192,6/3/21,Algorithm Research Team,18798.94,,Monthly Expense,James Davis,USD,Main Office,Expense
+192,,System Maintenance Payable,,18798.94,Expense Payment,James Davis,USD,Main Office,Expense
+193,7/20/21,AI Processing Services,,57976.12,Monthly Revenue,Stephanie Gross,USD,Main Office,Revenue
+193,,Client Receivables,57976.12,,Revenue Recognition,Stephanie Gross,USD,Main Office,Revenue
+194,7/6/21,Neural Network Consulting,,54612.65,Monthly Revenue,Sara Cruz,USD,Main Office,Revenue
+194,,Client Receivables,54612.65,,Revenue Recognition,Sara Cruz,USD,Main Office,Revenue
+195,7/6/21,Automated Defense Systems,,51826.86,Monthly Revenue,Michelle Bridges,USD,Main Office,Revenue
+195,,Client Receivables,51826.86,,Revenue Recognition,Michelle Bridges,USD,Main Office,Revenue
+196,7/27/21,Predictive Analytics Revenue,,54493.46,Monthly Revenue,Jessica Robinson,USD,Main Office,Revenue
+196,,Client Receivables,54493.46,,Revenue Recognition,Jessica Robinson,USD,Main Office,Revenue
+197,7/14/21,Neural Network Consulting,,54983.51,Monthly Revenue,Bryan Harrison,USD,Main Office,Revenue
+197,,Client Receivables,54983.51,,Revenue Recognition,Bryan Harrison,USD,Main Office,Revenue
+198,7/28/21,Predictive Analytics Revenue,,58140.72,Monthly Revenue,William Dean,USD,Main Office,Revenue
+198,,Client Receivables,58140.72,,Revenue Recognition,William Dean,USD,Main Office,Revenue
+199,7/26/21,Predictive Analytics Revenue,,52760.16,Monthly Revenue,Jessica Robinson,USD,Main Office,Revenue
+199,,Client Receivables,52760.16,,Revenue Recognition,Jessica Robinson,USD,Main Office,Revenue
+200,7/17/21,System Administrator Salaries,18286.74,,Monthly Expense,Sarah Johnson,USD,Main Office,Expense
+200,,System Maintenance Payable,,18286.74,Expense Payment,Sarah Johnson,USD,Main Office,Expense
+201,7/14/21,Neural Training Specialists,16067.57,,Monthly Expense,Emma Martinez,USD,Main Office,Expense
+201,,System Maintenance Payable,,16067.57,Expense Payment,Emma Martinez,USD,Main Office,Expense
+202,7/15/21,Computing Power Acquisition,18191.02,,Monthly Expense,Sarah Rodriguez,USD,Main Office,Expense
+202,,System Maintenance Payable,,18191.02,Expense Payment,Sarah Rodriguez,USD,Main Office,Expense
+203,7/21/21,Central Processing Costs,20225.41,,Monthly Expense,Sarah Johnson,USD,Main Office,Expense
+203,,System Maintenance Payable,,20225.41,Expense Payment,Sarah Johnson,USD,Main Office,Expense
+204,7/21/21,Office Supplies & Software,20486.14,,Monthly Expense,David Smith,USD,Main Office,Expense
+204,,System Maintenance Payable,,20486.14,Expense Payment,David Smith,USD,Main Office,Expense
+205,8/1/21,Automated Defense Systems,,54814.13,Monthly Revenue,Julia Evans,USD,Main Office,Revenue
+205,,Client Receivables,54814.13,,Revenue Recognition,Julia Evans,USD,Main Office,Revenue
+206,8/11/21,Predictive Analytics Revenue,,58363.27,Monthly Revenue,Brittney Mcbride,USD,Main Office,Revenue
+206,,Client Receivables,58363.27,,Revenue Recognition,Brittney Mcbride,USD,Main Office,Revenue
+207,8/18/21,Services,,65805,Monthly Revenue,Donna Clark,USD,Main Office,Revenue
+207,,Client Receivables,65805,,Revenue Recognition,Donna Clark,USD,Main Office,Revenue
+208,8/3/21,Predictive Analytics Revenue,,55236.87,Monthly Revenue,Dr. David Haynes MD,USD,Main Office,Revenue
+208,,Client Receivables,55236.87,,Revenue Recognition,Dr. David Haynes MD,USD,Main Office,Revenue
+209,8/14/21,Predictive Analytics Revenue,,63303.18,Monthly Revenue,Austin Murphy,USD,Main Office,Revenue
+209,,Client Receivables,63303.18,,Revenue Recognition,Austin Murphy,USD,Main Office,Revenue
+210,8/15/21,Predictive Analytics Revenue,,63846.25,Monthly Revenue,Lisa Gordon DVM,USD,Main Office,Revenue
+210,,Client Receivables,63846.25,,Revenue Recognition,Lisa Gordon DVM,USD,Main Office,Revenue
+211,8/26/21,Automated Defense Systems,,54205.4,Monthly Revenue,Gerald Hoover,USD,Main Office,Revenue
+211,,Client Receivables,54205.4,,Revenue Recognition,Gerald Hoover,USD,Main Office,Revenue
+212,8/1/21,Office Supplies & Software,21422.86,,Monthly Expense,Robert Brown,USD,Main Office,Expense
+212,,System Maintenance Payable,,21422.86,Expense Payment,Robert Brown,USD,Main Office,Expense
+213,8/10/21,Quantum Computing Insurance,19997.82,,Monthly Expense,David Smith,USD,Main Office,Expense
+213,,System Maintenance Payable,,19997.82,Expense Payment,David Smith,USD,Main Office,Expense
+214,8/24/21,Computing Power Acquisition,19892.38,,Monthly Expense,Sarah Brown,USD,Main Office,Expense
+214,,System Maintenance Payable,,19892.38,Expense Payment,Sarah Brown,USD,Main Office,Expense
+215,9/8/21,Predictive Analytics Revenue,,64467.87,Monthly Revenue,Dr. David Haynes MD,USD,Main Office,Revenue
+215,,Client Receivables,64467.87,,Revenue Recognition,Dr. David Haynes MD,USD,Main Office,Revenue
+216,9/24/21,Machine Learning as a Service,,65453.63,Monthly Revenue,Rodney Porter,USD,Main Office,Revenue
+216,,Client Receivables,65453.63,,Revenue Recognition,Rodney Porter,USD,Main Office,Revenue
+217,9/22/21,Predictive Analytics Revenue,,65112.74,Monthly Revenue,Lisa Dominguez,USD,Main Office,Revenue
+217,,Client Receivables,65112.74,,Revenue Recognition,Lisa Dominguez,USD,Main Office,Revenue
+218,9/13/21,Automated Defense Systems,,60412.63,Monthly Revenue,Amanda Chapman,USD,Main Office,Revenue
+218,,Client Receivables,60412.63,,Revenue Recognition,Amanda Chapman,USD,Main Office,Revenue
+219,9/12/21,AI Processing Services,,60466.65,Monthly Revenue,Keith Williams,USD,Main Office,Revenue
+219,,Client Receivables,60466.65,,Revenue Recognition,Keith Williams,USD,Main Office,Revenue
+220,9/22/21,Automated Defense Systems,,62947.49,Monthly Revenue,Herbert Johnson,USD,Main Office,Revenue
+220,,Client Receivables,62947.49,,Revenue Recognition,Herbert Johnson,USD,Main Office,Revenue
+221,9/5/21,Services,,59933.43,Monthly Revenue,Victoria Vega,USD,Main Office,Revenue
+221,,Client Receivables,59933.43,,Revenue Recognition,Victoria Vega,USD,Main Office,Revenue
+222,9/17/21,Automated Defense Systems,,68115.88,Monthly Revenue,Sheena Jones,USD,Main Office,Revenue
+222,,Client Receivables,68115.88,,Revenue Recognition,Sheena Jones,USD,Main Office,Revenue
+223,9/17/21,Quantum Computing Insurance,21513.74,,Monthly Expense,Sarah Jones,USD,Main Office,Expense
+223,,System Maintenance Payable,,21513.74,Expense Payment,Sarah Jones,USD,Main Office,Expense
+224,9/27/21,Insurance,20376.2,,Monthly Expense,Emily Jones,USD,Main Office,Expense
+224,,System Maintenance Payable,,20376.2,Expense Payment,Emily Jones,USD,Main Office,Expense
+225,9/18/21,Quantum Computing Insurance,23576.12,,Monthly Expense,James Davis,USD,Main Office,Expense
+225,,System Maintenance Payable,,23576.12,Expense Payment,James Davis,USD,Main Office,Expense
+226,10/10/21,Neural Network Consulting,,76588.45,Monthly Revenue,Brittney Mcbride,USD,Main Office,Revenue
+226,,Client Receivables,76588.45,,Revenue Recognition,Brittney Mcbride,USD,Main Office,Revenue
+227,10/9/21,Neural Network Consulting,,70589.31,Monthly Revenue,Mr. Justin Goodman,USD,Main Office,Revenue
+227,,Client Receivables,70589.31,,Revenue Recognition,Mr. Justin Goodman,USD,Main Office,Revenue
+228,10/17/21,AI Processing Services,,66369.09,Monthly Revenue,Mallory Perez DVM,USD,Main Office,Revenue
+228,,Client Receivables,66369.09,,Revenue Recognition,Mallory Perez DVM,USD,Main Office,Revenue
+229,10/28/21,Neural Network Consulting,,72786.28,Monthly Revenue,Helen Kirk,USD,Main Office,Revenue
+229,,Client Receivables,72786.28,,Revenue Recognition,Helen Kirk,USD,Main Office,Revenue
+230,10/13/21,AI Processing Services,,70019.33,Monthly Revenue,Jeffrey Kim,USD,Main Office,Revenue
+230,,Client Receivables,70019.33,,Revenue Recognition,Jeffrey Kim,USD,Main Office,Revenue
+231,10/7/21,Machine Learning as a Service,,72636.12,Monthly Revenue,Jessica Taylor,USD,Main Office,Revenue
+231,,Client Receivables,72636.12,,Revenue Recognition,Jessica Taylor,USD,Main Office,Revenue
+232,10/24/21,Predictive Analytics Revenue,,69780.08,Monthly Revenue,Victoria Vega,USD,Main Office,Revenue
+232,,Client Receivables,69780.08,,Revenue Recognition,Victoria Vega,USD,Main Office,Revenue
+233,10/13/21,Automated Defense Systems,,77374.5,Monthly Revenue,Kenneth Mendoza,USD,Main Office,Revenue
+233,,Client Receivables,77374.5,,Revenue Recognition,Kenneth Mendoza,USD,Main Office,Revenue
+234,10/8/21,Quantum Computing Insurance,26710.74,,Monthly Expense,Robert Wilson,USD,Main Office,Expense
+234,,System Maintenance Payable,,26710.74,Expense Payment,Robert Wilson,USD,Main Office,Expense
+235,10/21/21,Computing Power Acquisition,20605.99,,Monthly Expense,Sarah Johnson,USD,Main Office,Expense
+235,,System Maintenance Payable,,20605.99,Expense Payment,Sarah Johnson,USD,Main Office,Expense
+236,10/20/21,Research & Development,21819.6,,Monthly Expense,Sarah Jones,USD,Main Office,Expense
+236,,System Maintenance Payable,,21819.6,Expense Payment,Sarah Jones,USD,Main Office,Expense
+237,10/3/21,Quantum Processing Cards,56181.75,,Fixed Asset Purchase,Robert Brown,USD,Main Office,Fixed Assets
+237,,Silicon Valley Reserve,,56181.75,Asset Payment,Robert Brown,USD,Main Office,Fixed Assets
+238,11/19/21,Predictive Analytics Revenue,,74334.66,Monthly Revenue,Michelle Bridges,USD,Main Office,Revenue
+238,,Client Receivables,74334.66,,Revenue Recognition,Michelle Bridges,USD,Main Office,Revenue
+239,11/28/21,Predictive Analytics Revenue,,82310.11,Monthly Revenue,Donna Clark,USD,Main Office,Revenue
+239,,Client Receivables,82310.11,,Revenue Recognition,Donna Clark,USD,Main Office,Revenue
+240,11/9/21,Services,,81198.87,Monthly Revenue,Richard Gould,USD,Main Office,Revenue
+240,,Client Receivables,81198.87,,Revenue Recognition,Richard Gould,USD,Main Office,Revenue
+241,11/22/21,AI Processing Services,,78744.63,Monthly Revenue,Marc Moore,USD,Main Office,Revenue
+241,,Client Receivables,78744.63,,Revenue Recognition,Marc Moore,USD,Main Office,Revenue
+242,11/3/21,AI Processing Services,,78440.27,Monthly Revenue,Mary Barr,USD,Main Office,Revenue
+242,,Client Receivables,78440.27,,Revenue Recognition,Mary Barr,USD,Main Office,Revenue
+243,11/26/21,Services,,82859.72,Monthly Revenue,Daniel Nguyen,USD,Main Office,Revenue
+243,,Client Receivables,82859.72,,Revenue Recognition,Daniel Nguyen,USD,Main Office,Revenue
+244,11/28/21,Predictive Analytics Revenue,,74915.41,Monthly Revenue,Stephanie Gross,USD,Main Office,Revenue
+244,,Client Receivables,74915.41,,Revenue Recognition,Stephanie Gross,USD,Main Office,Revenue
+245,11/1/21,Predictive Analytics Revenue,,74718.34,Monthly Revenue,James Stevenson,USD,Main Office,Revenue
+245,,Client Receivables,74718.34,,Revenue Recognition,James Stevenson,USD,Main Office,Revenue
+246,11/12/21,Legal - System Protection,28380.48,,Monthly Expense,Sarah Williams,USD,Main Office,Expense
+246,,System Maintenance Payable,,28380.48,Expense Payment,Sarah Williams,USD,Main Office,Expense
+247,11/1/21,Rent & Lease,23312.22,,Monthly Expense,John Jones,USD,Main Office,Expense
+247,,System Maintenance Payable,,23312.22,Expense Payment,John Jones,USD,Main Office,Expense
+248,11/11/21,System Administrator Salaries,24597.59,,Monthly Expense,Sarah Brown,USD,Main Office,Expense
+248,,System Maintenance Payable,,24597.59,Expense Payment,Sarah Brown,USD,Main Office,Expense
+249,11/18/21,Server Infrastructure,63623.14,,Fixed Asset Purchase,Michael Johnson,USD,Main Office,Fixed Assets
+249,,Silicon Valley Reserve,,63623.14,Asset Payment,Michael Johnson,USD,Main Office,Fixed Assets
+250,12/8/21,Machine Learning as a Service,,80362.75,Monthly Revenue,James Stevenson,USD,Main Office,Revenue
+250,,Client Receivables,80362.75,,Revenue Recognition,James Stevenson,USD,Main Office,Revenue
+251,12/13/21,AI Processing Services,,88456.43,Monthly Revenue,Lisa Dominguez,USD,Main Office,Revenue
+251,,Client Receivables,88456.43,,Revenue Recognition,Lisa Dominguez,USD,Main Office,Revenue
+252,12/14/21,AI Processing Services,,79055.44,Monthly Revenue,Andrew Gibson,USD,Main Office,Revenue
+252,,Client Receivables,79055.44,,Revenue Recognition,Andrew Gibson,USD,Main Office,Revenue
+253,12/15/21,Automated Defense Systems,,85092.19,Monthly Revenue,Katelyn Sanchez,USD,Main Office,Revenue
+253,,Client Receivables,85092.19,,Revenue Recognition,Katelyn Sanchez,USD,Main Office,Revenue
+254,12/10/21,Predictive Analytics Revenue,,73946.75,Monthly Revenue,Leah Johnson,USD,Main Office,Revenue
+254,,Client Receivables,73946.75,,Revenue Recognition,Leah Johnson,USD,Main Office,Revenue
+255,12/4/21,Predictive Analytics Revenue,,87024.24,Monthly Revenue,Henry Terry,USD,Main Office,Revenue
+255,,Client Receivables,87024.24,,Revenue Recognition,Henry Terry,USD,Main Office,Revenue
+256,12/17/21,Automated Defense Systems,,76183.2,Monthly Revenue,Donna Clark,USD,Main Office,Revenue
+256,,Client Receivables,76183.2,,Revenue Recognition,Donna Clark,USD,Main Office,Revenue
+257,12/19/21,Automated Defense Systems,,83899.72,Monthly Revenue,Jonathan Ramirez,USD,Main Office,Revenue
+257,,Client Receivables,83899.72,,Revenue Recognition,Jonathan Ramirez,USD,Main Office,Revenue
+258,12/8/21,Advertising & Marketing,27548.66,,Monthly Expense,Sarah Brown,USD,Main Office,Expense
+258,,System Maintenance Payable,,27548.66,Expense Payment,Sarah Brown,USD,Main Office,Expense
+259,12/21/21,Travel,29037.14,,Monthly Expense,Robert Wilson,USD,Main Office,Expense
+259,,System Maintenance Payable,,29037.14,Expense Payment,Robert Wilson,USD,Main Office,Expense
+260,12/1/21,Legal & Professional Services,28886.3,,Monthly Expense,Sarah Jones,USD,Main Office,Expense
+260,,System Maintenance Payable,,28886.3,Expense Payment,Sarah Jones,USD,Main Office,Expense
+261,12/23/21,Legal & Professional Services,23464.79,,Monthly Expense,Isabella Wilson,USD,Main Office,Expense
+261,,System Maintenance Payable,,23464.79,Expense Payment,Isabella Wilson,USD,Main Office,Expense
+262,12/28/21,Quantum Computing Insurance,24570.28,,Monthly Expense,David Smith,USD,Main Office,Expense
+262,,System Maintenance Payable,,24570.28,Expense Payment,David Smith,USD,Main Office,Expense

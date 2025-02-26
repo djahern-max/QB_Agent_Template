@@ -224,3 +224,28 @@ async def get_suggested_questions():
             "Should I be concerned about my current liabilities?",
         ]
     }
+
+
+@router.post("/api/financial/cash-flow-forecast/{realm_id}")
+async def forecast_cash_flow(
+    realm_id: str,
+    request: Request,
+    qb_service: QuickBooksService = Depends(),
+    agent: FinancialAnalysisAgent = Depends(),
+):
+    """Forecast cash flow based on QuickBooks data"""
+    try:
+        # Get cash accounts
+        cash_accounts = qb_service.get_cash_accounts(realm_id)
+
+        # Get transaction history (last 90 days)
+        transactions = qb_service.get_transaction_history(realm_id, days=90)
+
+        # Generate forecast with GPT-4
+        forecast = await agent.forecast_cash_flow(cash_accounts, transactions)
+
+        return forecast
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Failed to forecast cash flow: {str(e)}"
+        )

@@ -27,8 +27,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Add the financial router with the correct prefix
+# If your frontend is requesting /api/financial/*, use this:
+app.include_router(financial_router, prefix="/api")
 
-app.include_router(financial_router)
+# If you need to keep the financial router's existing prefix (if it already includes '/financial')
+# Make sure it's clear what you're doing:
+# app.include_router(financial_router)
 
 
 @app.get("/")
@@ -49,19 +54,12 @@ async def get_routes():
     return {"routes": routes}
 
 
-# Catch-all route to see what paths are being requested
-@app.get("/api/{full_path:path}", include_in_schema=False)
-async def api_catch_all(request: Request, full_path: str):
-    """Debug route to catch all API requests and print the path"""
-    logger.debug(f"Received API request at path: {full_path}")
+# Move the catch-all route AFTER all other routes
+# And make it more specific to avoid catching legitimate routes
+@app.get("/api/debug/{full_path:path}", include_in_schema=False)
+async def api_debug_catch_all(request: Request, full_path: str):
+    """Debug route to catch API requests that don't match any defined routes"""
+    logger.debug(f"Received unmatched API request at path: {full_path}")
     logger.debug(f"Full URL: {request.url}")
     logger.debug(f"Query params: {request.query_params}")
     return {"path": full_path, "message": "API route not found"}
-
-
-# Run the application
-if __name__ == "__main__":
-    import uvicorn
-
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("app.main:app", host="0.0.0.0", port=port, reload=True)

@@ -17,9 +17,7 @@ def get_quickbooks_service(db: Session = Depends(get_db)):
 
 
 @router.get("/auth-url")
-async def get_auth_url(
-    request: Request, qb_service: QuickBooksService = Depends(get_quickbooks_service)
-):
+async def get_auth_url(qb_service: QuickBooksService = Depends(get_quickbooks_service)):
     """Generate QuickBooks auth URL"""
     try:
         auth_url = await qb_service.get_auth_url()

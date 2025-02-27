@@ -6,6 +6,11 @@ from fastapi.routing import APIRoute
 from fastapi.responses import JSONResponse
 from starlette.responses import RedirectResponse
 from .routers.financial import router as financial_router
+from fastapi import APIRouter
+from fastapi import FastAPI
+from fastapi import Request
+from fastapi.responses import JSONResponse
+from fastapi.routing import APIRoute
 
 
 from .database import engine, Base
@@ -29,7 +34,7 @@ app.add_middleware(
 
 # Add the financial router with the correct prefix
 # If your frontend is requesting /api/financial/*, use this:
-app.include_router(financial_router, prefix="/api")
+router = APIRouter(tags=["financial"])
 
 # If you need to keep the financial router's existing prefix (if it already includes '/financial')
 # Make sure it's clear what you're doing:

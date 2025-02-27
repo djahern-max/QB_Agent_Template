@@ -4,12 +4,21 @@ from ..services.quickbooks import QuickBooksService
 from fastapi.requests import Request
 from fastapi.responses import RedirectResponse
 from fastapi.params import Query
+from ..database import get_db
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/financial", tags=["financial"])
 
 
+# Helper function to get QuickBooksService instance
+def get_quickbooks_service(db: Session = Depends(get_db)):
+    return QuickBooksService(db)
+
+
 @router.get("/auth-url")
-async def get_auth_url(request: Request, qb_service: QuickBooksService = Depends()):
+async def get_auth_url(
+    request: Request, qb_service: QuickBooksService = Depends(get_quickbooks_service)
+):
     """Generate QuickBooks auth URL"""
     try:
         auth_url = await qb_service.get_auth_url()
@@ -20,7 +29,7 @@ async def get_auth_url(request: Request, qb_service: QuickBooksService = Depends
 
 @router.get("/connection-status/{realm_id}")
 async def check_connection_status(
-    realm_id: str, qb_service: QuickBooksService = Depends()
+    realm_id: str, qb_service: QuickBooksService = Depends(get_quickbooks_service)
 ):
     """Check if the connection to QuickBooks is active"""
     try:
@@ -31,7 +40,7 @@ async def check_connection_status(
 
 
 @router.get("/accounts")
-async def get_accounts(qb_service: QuickBooksService = Depends()):
+async def get_accounts(qb_service: QuickBooksService = Depends(get_quickbooks_service)):
     try:
         accounts = await qb_service.get_accounts()
         return accounts
@@ -46,7 +55,7 @@ async def get_accounts(qb_service: QuickBooksService = Depends()):
 async def get_profit_loss(
     start_date: str = None,
     end_date: str = None,
-    qb_service: QuickBooksService = Depends(),
+    qb_service: QuickBooksService = Depends(get_quickbooks_service),
 ):
     try:
         return await qb_service.get_profit_loss_statement(start_date, end_date)
@@ -58,7 +67,8 @@ async def get_profit_loss(
 
 @router.get("/statements/balance-sheet")
 async def get_balance_sheet(
-    as_of_date: str = None, qb_service: QuickBooksService = Depends()
+    as_of_date: str = None,
+    qb_service: QuickBooksService = Depends(get_quickbooks_service),
 ):
     try:
         return await qb_service.get_balance_sheet(as_of_date)
@@ -72,7 +82,7 @@ async def get_balance_sheet(
 async def get_cash_flow(
     start_date: str = None,
     end_date: str = None,
-    qb_service: QuickBooksService = Depends(),
+    qb_service: QuickBooksService = Depends(get_quickbooks_service),
 ):
     try:
         return await qb_service.get_cash_flow_statement(start_date, end_date)
@@ -88,7 +98,7 @@ async def quickbooks_callback(
     state: str = Query(None),
     realmId: str = Query(None),
     error: str = Query(None),
-    qb_service: QuickBooksService = Depends(),
+    qb_service: QuickBooksService = Depends(get_quickbooks_service),
 ):
     """Handle OAuth callback from QuickBooks"""
     if error:
@@ -115,7 +125,9 @@ async def quickbooks_callback(
 
 
 @router.get("/company-name/{realm_id}")
-async def get_company_name(realm_id: str, qb_service: QuickBooksService = Depends()):
+async def get_company_name(
+    realm_id: str, qb_service: QuickBooksService = Depends(get_quickbooks_service)
+):
     """Get the company name for a QuickBooks connection"""
     try:
         # In a real implementation, you would query QuickBooks for the company info
@@ -127,7 +139,7 @@ async def get_company_name(realm_id: str, qb_service: QuickBooksService = Depend
 
 @router.get("/accounts/{realm_id}")
 async def get_accounts_by_realm(
-    realm_id: str, qb_service: QuickBooksService = Depends()
+    realm_id: str, qb_service: QuickBooksService = Depends(get_quickbooks_service)
 ):
     """Get all accounts for a specific QuickBooks realm"""
     try:

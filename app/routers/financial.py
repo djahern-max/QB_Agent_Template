@@ -1,8 +1,26 @@
 # app/routers/financial.py
 from fastapi import APIRouter, HTTPException, Depends
 from ..services.quickbooks import QuickBooksService
+from fastapi.requests import Request
 
 router = APIRouter(prefix="/api/financial", tags=["financial"])
+
+
+@router.get("/auth-url")
+async def get_auth_url(request: Request, qb_service: QuickBooksService = Depends()):
+    try:
+        # Get the QuickBooks auth URL
+        auth_url = await qb_service.get_auth_url()
+        return {"auth_url": auth_url}
+    except Exception as e:
+        # Log the full error details for debugging
+        import traceback
+
+        print(f"Error generating auth URL: {str(e)}")
+        print(traceback.format_exc())
+        raise HTTPException(
+            status_code=500, detail=f"Error generating QuickBooks auth URL: {str(e)}"
+        )
 
 
 @router.get("/accounts")

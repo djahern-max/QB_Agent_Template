@@ -1,25 +1,20 @@
 # app/core/middleware.py
-from starlette.middleware.base import BaseHTTPMiddleware
-from fastapi import Request
-import re
+from fastapi import Request, Response
+from fastapi.responses import JSONResponse
+import time
+import logging
 
 
-class SubdomainMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        # Extract host from the request
-        host = request.headers.get("host", "")
+async def logging_middleware(request: Request, call_next):
+    start_time = time.time()
 
-        # Extract the subdomain (if any)
-        subdomain = None
-        domain_pattern = r"(?:(.+)\.)?ryze\.ai"
-        match = re.match(domain_pattern, host)
-
-        if match and match.group(1):
-            subdomain = match.group(1)
-
-        # Add subdomain to request state for use in routers
-        request.state.subdomain = subdomain
-
-        # Continue processing the request
+    try:
         response = await call_next(request)
+        process_time = time.time() - start_time
+        response.headers["X-Process-Time"] = str(process_time)
         return response
+    except Exception as e:
+        logging.error(f"Request failed: {str(e)}")
+        return JSONResponse(
+            status_code=500, content={"detail": "Internal server error"}
+        )

@@ -6,7 +6,7 @@ from fastapi.routing import APIRoute
 from fastapi.responses import JSONResponse
 from starlette.responses import RedirectResponse
 
-from .routers import financial
+
 from .database import engine, Base
 
 logging.basicConfig(level=logging.DEBUG)
@@ -20,15 +20,17 @@ app = FastAPI(title="RYZE.ai Financial Analysis Agent")
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with your actual domains
+    allow_origins=["*"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include routers directly without prefix
-# The prefix is already in the routes themselves
-app.include_router(financial.router)
+# Import and include routers
+from .routers.financial import router as financial_router
+
+app.include_router(financial_router)
 
 
 @app.get("/")

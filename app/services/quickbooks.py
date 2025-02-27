@@ -1,43 +1,36 @@
 # app/services/quickbooks.py
 import httpx
 from datetime import datetime, timedelta
+import os
+from urllib.parse import urlencode
 
 
 class QuickBooksService:
-    def __init__(self, client_id, client_secret, redirect_uri, company_id=None):
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.redirect_uri = redirect_uri
-        self.company_id = company_id
-        self.base_url = "https://quickbooks.api.intuit.com/v3/company"
+    def __init__(self):
+        # Load from environment variables or config
+        self.client_id = os.getenv("QUICKBOOKS_CLIENT_ID")
+        self.client_secret = os.getenv("QUICKBOOKS_CLIENT_SECRET")
+        self.redirect_uri = os.getenv("QUICKBOOKS_REDIRECT_URI")
+        self.scope = "com.intuit.quickbooks.accounting"
+        self.auth_endpoint = "https://appcenter.intuit.com/connect/oauth2"
 
-    async def get_accounts(self):
-        """Get all accounts from QuickBooks"""
-        # Get the access token and company_id from your database
-        # Then make the API request
-        url = f"{self.base_url}/{self.company_id}/query"
-        params = {"query": "SELECT * FROM Account WHERE Active = true ORDER BY Name"}
+    async def get_auth_url(self):
+        """Generate QuickBooks OAuth URL"""
+        if not self.client_id or not self.redirect_uri:
+            raise ValueError(
+                "Missing QuickBooks credentials. Check environment variables."
+            )
 
-        # Make authenticated request to QuickBooks API
-        # Return formatted accounts list
-        # Handle any errors
+        params = {
+            "client_id": self.client_id,
+            "redirect_uri": self.redirect_uri,
+            "response_type": "code",
+            "scope": self.scope,
+            "state": "random_state",  # You should generate a secure random state
+        }
 
-        # Mock response for development
-        return [
-            {
-                "id": "1",
-                "name": "Checking Account",
-                "type": "Bank",
-                "balance": 15000.00,
-            },
-            {
-                "id": "2",
-                "name": "Accounts Receivable",
-                "type": "Accounts Receivable",
-                "balance": 5000.00,
-            },
-            # Add more mock accounts as needed
-        ]
+        auth_url = f"{self.auth_endpoint}?{urlencode(params)}"
+        return auth_url
 
     async def get_profit_loss_statement(self, start_date=None, end_date=None):
         """Get Profit & Loss statement from QuickBooks"""

@@ -5,6 +5,7 @@ import logging
 from fastapi.routing import APIRoute
 from fastapi.responses import JSONResponse
 from starlette.responses import RedirectResponse
+from .routers.financial import router as financial_router
 
 
 from .database import engine, Base
@@ -26,8 +27,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Import and include routers
-from .routers.financial import router as financial_router
 
 app.include_router(financial_router)
 

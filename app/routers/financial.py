@@ -10,19 +10,24 @@ router = APIRouter(prefix="/financial", tags=["financial"])
 
 @router.get("/auth-url")
 async def get_auth_url(request: Request, qb_service: QuickBooksService = Depends()):
+    """Generate QuickBooks auth URL"""
     try:
-        # Get the QuickBooks auth URL
         auth_url = await qb_service.get_auth_url()
         return {"auth_url": auth_url}
     except Exception as e:
-        # Log the full error details for debugging
-        import traceback
+        raise HTTPException(status_code=500, detail=str(e))
 
-        print(f"Error generating auth URL: {str(e)}")
-        print(traceback.format_exc())
-        raise HTTPException(
-            status_code=500, detail=f"Error generating QuickBooks auth URL: {str(e)}"
-        )
+
+@router.get("/connection-status/{realm_id}")
+async def check_connection_status(
+    realm_id: str, qb_service: QuickBooksService = Depends()
+):
+    """Check if the connection to QuickBooks is active"""
+    try:
+        status = await qb_service.get_connection_status(realm_id)
+        return status
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/accounts")
@@ -107,15 +112,3 @@ async def quickbooks_callback(
     except Exception as e:
         print(f"Error in QuickBooks callback: {str(e)}")
         return HTTPException(status_code=500, detail=f"OAuth error: {str(e)}")
-
-
-@router.get("/connection-status/{realm_id}")
-async def check_connection_status(
-    realm_id: str, qb_service: QuickBooksService = Depends()
-):
-    """Check if the connection to QuickBooks is active"""
-    try:
-        status = await qb_service.get_connection_status(realm_id)
-        return status
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))

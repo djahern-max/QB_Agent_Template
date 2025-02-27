@@ -6,6 +6,8 @@ from fastapi.routing import APIRoute
 from fastapi.responses import JSONResponse
 from starlette.responses import RedirectResponse
 from .routers.financial import router as financial_router
+from fastapi.responses import JSONResponse, PlainTextResponse
+
 
 from .database import engine, Base
 
@@ -59,3 +61,17 @@ async def get_routes():
                 {"path": route.path, "name": route.name, "methods": list(route.methods)}
             )
     return {"routes": routes}
+
+
+@app.get("/routes-simple", response_class=PlainTextResponse)
+async def get_routes_simple():
+    """
+    Returns a concise list of all routes with their paths and methods.
+    """
+    routes = []
+    for route in app.routes:
+        if isinstance(route, APIRoute):
+            methods = ", ".join(route.methods)
+            routes.append(f"{methods}: {route.path}")
+
+    return "\n".join(routes)

@@ -112,3 +112,14 @@ async def quickbooks_callback(
     except Exception as e:
         print(f"Error in QuickBooks callback: {str(e)}")
         return HTTPException(status_code=500, detail=f"OAuth error: {str(e)}")
+
+
+@router.get("/company-name/{realm_id}")
+async def get_company_name(realm_id: str, qb_service: QuickBooksService = Depends()):
+    """Get the company name for a QuickBooks connection"""
+    try:
+        # In a real implementation, you would query QuickBooks for the company info
+        # For now, return a placeholder
+        return {"company_name": "Your Company Name"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

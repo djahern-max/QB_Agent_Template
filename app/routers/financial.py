@@ -9,6 +9,9 @@ from sqlalchemy.orm import Session
 from typing import Optional
 import logging
 import aiohttp
+from ..database import get_db
+from ..models import QuickBooksTokens
+from ..services.quickbooks import QuickBooksService
 
 
 logger = logging.getLogger(__name__)
@@ -208,3 +211,32 @@ async def get_quickbooks_accounts(realm_id: str, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=500, detail=f"Error fetching accounts: {str(e)}"
         )
+
+
+@router.post("/disconnect/{realm_id}")
+async def disconnect_quickbooks(
+    realm_id: str,
+    qb_service: QuickBooksService = Depends(get_quickbooks_service),
+    db: Session = Depends(get_db),
+):
+    """Disconnect from a QuickBooks company"""
+    try:
+        # Delete the tokens for this realm
+        token_record = (
+            db.query(QuickBooksTokens)
+            .filter(QuickBooksTokens.realm_id == realm_id)
+            .first()
+        )
+
+        if token_record:
+            db.delete(token_record)
+            db.commit()
+            return {
+                "success": True,
+                "message": f"Disconnected from company with realm_id {realm_id}",
+            }
+        else:
+            return {"success": False, "message": "No connection found for this company"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error disconnecting: {str(e)}")

@@ -18,7 +18,117 @@ class QuickBooksService:
         self.db = db
         # Existing initialization code...
 
-    # Existing methods...
+    async def get_tokens(self, auth_code: str) -> Dict[str, Any]:
+        """
+        Exchange authorization code for access and refresh tokens.
+
+        Args:
+            auth_code: Authorization code from OAuth callback
+
+        Returns:
+            Dict containing access_token, refresh_token, and expiry information
+        """
+        try:
+            # Get environment variables
+            client_id = os.getenv("QUICKBOOKS_CLIENT_ID")
+            client_secret = os.getenv("QUICKBOOKS_CLIENT_SECRET")
+            redirect_uri = os.getenv("QUICKBOOKS_REDIRECT_URI")
+
+            if not client_id or not client_secret or not redirect_uri:
+                raise Exception(
+                    "Missing QuickBooks API credentials in environment variables"
+                )
+
+            # Set up token exchange request
+            token_endpoint = "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
+            payload = {
+                "grant_type": "authorization_code",
+                "code": auth_code,
+                "redirect_uri": redirect_uri,
+            }
+
+            headers = {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Accept": "application/json",
+            }
+
+            # Make the token request
+            async with aiohttp.ClientSession() as session:
+                # Create Basic auth header
+                auth = aiohttp.BasicAuth(client_id, client_secret)
+
+                async with session.post(
+                    token_endpoint, data=payload, headers=headers, auth=auth
+                ) as response:
+                    if response.status == 200:
+                        token_data = await response.json()
+
+                        # Calculate expiry time
+                        expires_in = token_data.get(
+                            "expires_in", 3600
+                        )  # Default to 1 hour if not specified
+                        expiry_time = datetime.now().timestamp() + expires_in
+
+                        return {
+                            "access_token": token_data.get("access_token"),
+                            "refresh_token": token_data.get("refresh_token"),
+                            "expires_at": datetime.fromtimestamp(expiry_time),
+                            "x_refresh_token_expires_in": token_data.get(
+                                "x_refresh_token_expires_in"
+                            ),
+                        }
+                    else:
+                        error_text = await response.text()
+                        logger.error(f"Failed to get tokens: {error_text}")
+                        raise Exception(
+                            f"Token exchange failed: HTTP {response.status} - {error_text}"
+                        )
+
+        except Exception as e:
+            logger.error(f"Error getting tokens: {str(e)}")
+            raise Exception(f"Could not get tokens: {str(e)}")
+
+    async def store_tokens(self, realm_id: str, tokens: Dict[str, Any]):
+        """
+        Store QuickBooks OAuth tokens in the database.
+
+        Args:
+            realm_id: QuickBooks company ID
+            tokens: Token data from get_tokens method
+        """
+        try:
+            # Check if a record already exists for this realm
+            existing_record = (
+                self.db.query(QuickBooksTokens)
+                .filter(QuickBooksTokens.realm_id == realm_id)
+                .first()
+            )
+
+            if existing_record:
+                # Update existing record
+                existing_record.access_token = tokens["access_token"]
+                existing_record.refresh_token = tokens["refresh_token"]
+                existing_record.expires_at = tokens["expires_at"]
+                existing_record.updated_at = datetime.now()
+            else:
+                # Create new record
+                new_record = QuickBooksTokens(
+                    realm_id=realm_id,
+                    access_token=tokens["access_token"],
+                    refresh_token=tokens["refresh_token"],
+                    expires_at=tokens["expires_at"],
+                    created_at=datetime.now(),
+                    updated_at=datetime.now(),
+                )
+                self.db.add(new_record)
+
+            # Commit the changes
+            self.db.commit()
+
+        except Exception as e:
+            self.db.rollback()
+            logger.error(f"Error storing tokens: {str(e)}")
+            raise Exception(f"Could not store tokens: {str(e)}")
 
     async def get_report(
         self, realm_id: str, report_type: str, params: Dict[str, Any] = None

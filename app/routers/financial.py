@@ -2,10 +2,11 @@
 from fastapi import APIRouter, HTTPException, Depends
 from ..services.quickbooks import QuickBooksService
 from fastapi.requests import Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.params import Query
 from ..database import get_db
 from sqlalchemy.orm import Session
+from typing import Optional
 
 router = APIRouter(prefix="/financial", tags=["financial"])
 
@@ -112,16 +113,23 @@ async def quickbooks_callback(
 
     try:
         # Exchange authorization code for access token
-        tokens = await qb_service.get_tokens(code, realmId)
+        tokens = await qb_service.get_tokens(code)
 
         # Store tokens in your database
-        await qb_service.save_tokens(tokens, realmId)
+        await qb_service.store_tokens(realmId, tokens)
 
         # Redirect to dashboard with realmId
         return RedirectResponse(url=f"/dashboard?realm_id={realmId}")
     except Exception as e:
         print(f"Error in QuickBooks callback: {str(e)}")
-        return HTTPException(status_code=500, detail=f"OAuth error: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "status_code": 500,
+                "detail": f"OAuth error: {str(e)}",
+                "headers": None,
+            },
+        )
 
 
 @router.get("/company-name/{realm_id}")

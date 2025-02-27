@@ -6,12 +6,6 @@ from fastapi.routing import APIRoute
 from fastapi.responses import JSONResponse
 from starlette.responses import RedirectResponse
 from .routers.financial import router as financial_router
-from fastapi import APIRouter
-from fastapi import FastAPI
-from fastapi import Request
-from fastapi.responses import JSONResponse
-from fastapi.routing import APIRoute
-
 
 from .database import engine, Base
 
@@ -32,13 +26,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Add the financial router with the correct prefix
-# If your frontend is requesting /api/financial/*, use this:
-router = APIRouter(tags=["financial"])
+# Print financial router routes for debugging
+print(
+    "Financial router routes:",
+    [f"{list(route.methods)} {route.path}" for route in financial_router.routes],
+)
 
-# If you need to keep the financial router's existing prefix (if it already includes '/financial')
-# Make sure it's clear what you're doing:
-# app.include_router(financial_router)
+# Include financial router with /api prefix
+app.include_router(financial_router, prefix="/api")
+
+# Debug after including the router
+all_routes = []
+for route in app.routes:
+    if isinstance(route, APIRoute):
+        all_routes.append(f"{list(route.methods)} {route.path}")
+print("All routes after including financial_router:", all_routes)
 
 
 @app.get("/")
@@ -57,14 +59,3 @@ async def get_routes():
                 {"path": route.path, "name": route.name, "methods": list(route.methods)}
             )
     return {"routes": routes}
-
-
-# Move the catch-all route AFTER all other routes
-# And make it more specific to avoid catching legitimate routes
-@app.get("/api/debug/{full_path:path}", include_in_schema=False)
-async def api_debug_catch_all(request: Request, full_path: str):
-    """Debug route to catch API requests that don't match any defined routes"""
-    logger.debug(f"Received unmatched API request at path: {full_path}")
-    logger.debug(f"Full URL: {request.url}")
-    logger.debug(f"Query params: {request.query_params}")
-    return {"path": full_path, "message": "API route not found"}

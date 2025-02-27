@@ -107,3 +107,15 @@ async def quickbooks_callback(
     except Exception as e:
         print(f"Error in QuickBooks callback: {str(e)}")
         return HTTPException(status_code=500, detail=f"OAuth error: {str(e)}")
+
+
+@router.get("/connection-status/{realm_id}")
+async def check_connection_status(
+    realm_id: str, qb_service: QuickBooksService = Depends()
+):
+    """Check if the connection to QuickBooks is active"""
+    try:
+        status = await qb_service.get_connection_status(realm_id)
+        return status
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

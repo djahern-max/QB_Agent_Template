@@ -5,7 +5,7 @@ from fastapi.requests import Request
 from fastapi.responses import RedirectResponse
 from fastapi.params import Query
 
-router = APIRouter(prefix="/api/financial", tags=["financial"])
+router = APIRouter(prefix="/financial", tags=["financial"])
 
 
 @router.get("/auth-url")

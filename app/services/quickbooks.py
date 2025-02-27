@@ -168,3 +168,42 @@ class QuickBooksService:
 
             self.db.commit()
             return new_tokens
+
+    async def get_accounts(self):
+        """Get all accounts from QuickBooks"""
+        token = (
+            self.db.query(QuickBooksTokens).order_by(QuickBooksTokens.id.desc()).first()
+        )
+
+        if not token:
+            raise HTTPException(
+                status_code=401, detail="No valid QuickBooks connection found"
+            )
+
+        # Check if token needs refresh
+        if token.expires_at <= datetime.now():
+            await self.refresh_token(token.realm_id)
+        # Refresh the token object
+        token = (
+            self.db.query(QuickBooksTokens).filter_by(realm_id=token.realm_id).first()
+        )
+
+        # Make request to QuickBooks API
+        headers = {
+            "Authorization": f"Bearer {token.access_token}",
+            "Accept": "application/json",
+        }
+
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"https://quickbooks.api.intuit.com/v3/company/{token.realm_id}/query",
+                params={
+                    "query": "SELECT * FROM Account WHERE Active = true ORDER BY Name"
+                },
+                headers=headers,
+            )
+
+        if response.status_code != 200:
+            raise HTTPException(status_code=response.status_code, detail=response.text)
+
+        return response.json()

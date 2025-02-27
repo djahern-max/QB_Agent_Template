@@ -207,3 +207,61 @@ class QuickBooksService:
             raise HTTPException(status_code=response.status_code, detail=response.text)
 
         return response.json()
+
+    async def get_accounts_by_realm(self, realm_id: str):
+        """Get all accounts from QuickBooks for a specific realm"""
+        token = self.db.query(QuickBooksTokens).filter_by(realm_id=realm_id).first()
+
+        if not token:
+            raise HTTPException(
+                status_code=401,
+                detail=f"No valid QuickBooks connection found for realm {realm_id}",
+            )
+
+        # Check if token needs refresh
+        if token.expires_at <= datetime.now():
+            await self.refresh_token(realm_id)
+        # Refresh the token object
+        token = self.db.query(QuickBooksTokens).filter_by(realm_id=realm_id).first()
+
+        # Make request to QuickBooks API
+        headers = {
+            "Authorization": f"Bearer {token.access_token}",
+            "Accept": "application/json",
+        }
+
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    f"https://quickbooks.api.intuit.com/v3/company/{realm_id}/query",
+                    params={
+                        "query": "SELECT * FROM Account WHERE Active = true ORDER BY Name"
+                    },
+                    headers=headers,
+                )
+
+            if response.status_code != 200:
+                raise HTTPException(
+                    status_code=response.status_code, detail=response.text
+                )
+
+            data = response.json()
+
+            # Format the response to match the expected structure in the frontend
+            formatted_accounts = []
+            if "QueryResponse" in data and "Account" in data["QueryResponse"]:
+                for account in data["QueryResponse"]["Account"]:
+                    formatted_accounts.append(
+                        {
+                            "id": account.get("Id"),
+                            "name": account.get("Name"),
+                            "type": account.get("AccountType"),
+                            "balance": account.get("CurrentBalance", 0),
+                        }
+                    )
+
+            return {"accounts": formatted_accounts}
+        except Exception as e:
+            raise HTTPException(
+                status_code=500, detail=f"Error querying QuickBooks API: {str(e)}"
+            )

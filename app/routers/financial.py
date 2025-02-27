@@ -123,3 +123,17 @@ async def get_company_name(realm_id: str, qb_service: QuickBooksService = Depend
         return {"company_name": "Your Company Name"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/accounts/{realm_id}")
+async def get_accounts_by_realm(
+    realm_id: str, qb_service: QuickBooksService = Depends()
+):
+    """Get all accounts for a specific QuickBooks realm"""
+    try:
+        accounts = await qb_service.get_accounts_by_realm(realm_id)
+        return accounts
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error fetching accounts: {str(e)}"
+        )

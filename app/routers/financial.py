@@ -105,8 +105,8 @@ async def quickbooks_callback(
     if error:
         # Log the error
         print(f"OAuth error: {error}")
-        # Redirect to error page
-        return RedirectResponse(url="/oauth-error")
+        # Redirect to error page in React app with absolute URL
+        return RedirectResponse(url="https://agent1.ryze.ai/oauth-error")
 
     if not code or not realmId:
         return HTTPException(status_code=400, detail="Missing required parameters")
@@ -118,8 +118,10 @@ async def quickbooks_callback(
         # Store tokens in your database
         await qb_service.store_tokens(realmId, tokens)
 
-        # Redirect to dashboard with realmId
-        return RedirectResponse(url=f"/dashboard?realm_id={realmId}")
+        # Use absolute URL to redirect to React app's callback or dashboard
+        return RedirectResponse(
+            url=f"https://agent1.ryze.ai/dashboard?realm_id={realmId}"
+        )
     except Exception as e:
         print(f"Error in QuickBooks callback: {str(e)}")
         return JSONResponse(

@@ -7,6 +7,9 @@ from fastapi.params import Query
 from ..database import get_db
 from sqlalchemy.orm import Session
 from typing import Optional
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/financial", tags=["financial"])
 
@@ -167,15 +170,24 @@ async def get_financial_trends(
 ):
     """Get financial trends analysis"""
     try:
-        # Create financial statements service
+        # Import the FinancialStatementsService with correct capitalization
         from ..services.financial_statements import FinancialStatementsService
 
+        # Create the financial statements service with the QuickBooksService instance
         fs_service = FinancialStatementsService(qb_service)
 
         # Generate trends analysis
         trends = await fs_service.analyze_financial_trends(realm_id, db)
         return trends
+    except ImportError as e:
+        # Handle the case where the import fails
+        logger.error(f"Import error in financial trends endpoint: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error in financial trends service: {str(e)}"
+        )
     except Exception as e:
+        # Handle other exceptions
+        logger.error(f"Error analyzing financial trends: {str(e)}")
         raise HTTPException(
             status_code=500, detail=f"Error analyzing financial trends: {str(e)}"
         )

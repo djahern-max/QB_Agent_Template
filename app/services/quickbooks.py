@@ -1,247 +1,86 @@
-import os
-import requests
-import datetime
-from typing import Dict, Any
-from fastapi import HTTPException, Depends
-from sqlalchemy.orm import Session
-
-from ..database import get_db
-from ..models import QuickBooksTokens
+# app/services/quickbooks.py
+import httpx
+from datetime import datetime, timedelta
 
 
 class QuickBooksService:
-    def __init__(self, db: Session = Depends(get_db)):
-        self.client_id = os.getenv("QUICKBOOKS_CLIENT_ID")
-        self.client_secret = os.getenv("QUICKBOOKS_CLIENT_SECRET")
-        self.redirect_uri = os.getenv("QUICKBOOKS_REDIRECT_URI")
+    def __init__(self, client_id, client_secret, redirect_uri, company_id=None):
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.redirect_uri = redirect_uri
+        self.company_id = company_id
         self.base_url = "https://quickbooks.api.intuit.com/v3/company"
-        self.db = db
 
-    def get_auth_url(self) -> str:
-        """Generate authorization URL for QuickBooks OAuth"""
-        auth_url = "https://appcenter.intuit.com/connect/oauth2"
-        scope = "com.intuit.quickbooks.accounting"
+    async def get_accounts(self):
+        """Get all accounts from QuickBooks"""
+        # Get the access token and company_id from your database
+        # Then make the API request
+        url = f"{self.base_url}/{self.company_id}/query"
+        params = {"query": "SELECT * FROM Account WHERE Active = true ORDER BY Name"}
+
+        # Make authenticated request to QuickBooks API
+        # Return formatted accounts list
+        # Handle any errors
+
+        # Mock response for development
+        return [
+            {
+                "id": "1",
+                "name": "Checking Account",
+                "type": "Bank",
+                "balance": 15000.00,
+            },
+            {
+                "id": "2",
+                "name": "Accounts Receivable",
+                "type": "Accounts Receivable",
+                "balance": 5000.00,
+            },
+            # Add more mock accounts as needed
+        ]
+
+    async def get_profit_loss_statement(self, start_date=None, end_date=None):
+        """Get Profit & Loss statement from QuickBooks"""
+        # Set default dates if not provided
+        if not end_date:
+            end_date = datetime.now().strftime("%Y-%m-%d")
+        if not start_date:
+            # Default to start of current year
+            start_date = f"{datetime.now().year}-01-01"
+
+        url = f"{self.base_url}/{self.company_id}/reports/ProfitAndLoss"
         params = {
-            "client_id": self.client_id,
-            "response_type": "code",
-            "scope": scope,
-            "redirect_uri": self.redirect_uri,
-            "state": "state",  # You might want to generate a random state
-        }
-        query_string = "&".join([f"{k}={v}" for k, v in params.items()])
-        return f"{auth_url}?{query_string}"
-
-    def handle_callback(self, code: str, realm_id: str) -> Dict:
-        """Handle OAuth callback and exchange code for tokens"""
-        tokens = self._exchange_code_for_tokens(code)
-        self._save_tokens(tokens, realm_id)
-        return tokens
-
-    def _exchange_code_for_tokens(self, code: str) -> Dict:
-        """Exchange authorization code for access and refresh tokens"""
-        token_url = "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
-        headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        data = {
-            "code": code,
-            "redirect_uri": self.redirect_uri,
-            "grant_type": "authorization_code",
-            "client_id": self.client_id,
-            "client_secret": self.client_secret,
+            "start_date": start_date,
+            "end_date": end_date,
+            "accounting_method": "Accrual",
         }
 
-        response = requests.post(token_url, headers=headers, data=data)
-        if response.status_code != 200:
-            print(f"DEBUG: Token exchange failed with response: {response.text}")
-            raise HTTPException(
-                status_code=400, detail="Failed to exchange code for tokens"
-            )
+        # Make authenticated request to QuickBooks API
+        # Process the response into a suitable format
+        # Return formatted P&L statement
 
-        return response.json()
+        # Implement actual API call here
 
-    def _refresh_access_token(self, refresh_token: str) -> Dict:
-        """Refresh the access token using refresh token"""
-        token_url = "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
-        headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        data = {
-            "refresh_token": refresh_token,
-            "grant_type": "refresh_token",
-            "client_id": self.client_id,
-            "client_secret": self.client_secret,
-        }
+    async def get_balance_sheet(self, as_of_date=None):
+        """Get Balance Sheet from QuickBooks"""
+        if not as_of_date:
+            as_of_date = datetime.now().strftime("%Y-%m-%d")
 
-        response = requests.post(token_url, headers=headers, data=data)
-        if response.status_code != 200:
-            print(f"DEBUG: Token refresh failed with response: {response.text}")
-            raise HTTPException(
-                status_code=400, detail="Failed to refresh access token"
-            )
+        url = f"{self.base_url}/{self.company_id}/reports/BalanceSheet"
+        params = {"as_of": as_of_date}
 
-        return response.json()
+        # Make authenticated request and return formatted balance sheet
 
-    def _save_tokens(self, tokens: Dict, realm_id: str) -> None:
-        """Save QuickBooks tokens to database"""
-        # Calculate expires_at datetime from expires_in seconds
-        expires_at = datetime.datetime.now() + datetime.timedelta(
-            seconds=int(tokens["expires_in"])
-        )
+    async def get_cash_flow_statement(self, start_date=None, end_date=None):
+        """Get Cash Flow statement from QuickBooks"""
+        if not end_date:
+            end_date = datetime.now().strftime("%Y-%m-%d")
+        if not start_date:
+            # Default to 3 months ago
+            start_date_obj = datetime.now() - timedelta(days=90)
+            start_date = start_date_obj.strftime("%Y-%m-%d")
 
-        token_record = (
-            self.db.query(QuickBooksTokens).filter_by(realm_id=realm_id).first()
-        )
+        url = f"{self.base_url}/{self.company_id}/reports/CashFlow"
+        params = {"start_date": start_date, "end_date": end_date}
 
-        if token_record:
-            token_record.access_token = tokens["access_token"]
-            token_record.refresh_token = tokens["refresh_token"]
-            token_record.expires_at = expires_at
-        else:
-            token_record = QuickBooksTokens(
-                realm_id=realm_id,
-                access_token=tokens["access_token"],
-                refresh_token=tokens["refresh_token"],
-                expires_at=expires_at,
-            )
-            self.db.add(token_record)
-
-        self.db.commit()
-
-    def _get_tokens(self, realm_id: str) -> Dict:
-        """Get tokens from database and refresh if needed"""
-        token_record = (
-            self.db.query(QuickBooksTokens).filter_by(realm_id=realm_id).first()
-        )
-
-        if not token_record:
-            raise HTTPException(
-                status_code=401, detail="Not authenticated with QuickBooks"
-            )
-
-        return {
-            "access_token": token_record.access_token,
-            "refresh_token": token_record.refresh_token,
-            "realm_id": token_record.realm_id,
-        }
-
-    def get_accounts(self, realm_id: str) -> Dict:
-        """Get chart of accounts from QuickBooks"""
-        tokens = self._get_tokens(realm_id)
-
-        url = f"{self.base_url}/{realm_id}/query"
-        headers = {
-            "Authorization": f"Bearer {tokens['access_token']}",
-            "Accept": "application/json",
-        }
-
-        # Query to get all accounts
-        query = "SELECT * FROM Account WHERE Active = true ORDER BY Name"
-        params = {"query": query}
-
-        response = requests.get(url, headers=headers, params=params)
-
-        if response.status_code != 200:
-            # Try refreshing token if unauthorized
-            if response.status_code == 401:
-                refreshed_tokens = self._refresh_access_token(tokens["refresh_token"])
-                self._save_tokens(refreshed_tokens, realm_id)
-
-                # Retry with new token
-                headers["Authorization"] = f"Bearer {refreshed_tokens['access_token']}"
-                response = requests.get(url, headers=headers, params=params)
-
-                if response.status_code != 200:
-                    raise HTTPException(
-                        status_code=response.status_code,
-                        detail=f"Failed to fetch accounts after token refresh: {response.text[:200]}",
-                    )
-            else:
-                raise HTTPException(
-                    status_code=response.status_code,
-                    detail=f"Failed to fetch accounts: {response.text[:200]}",
-                )
-
-        return response.json()
-
-    def get_company_info(self, realm_id: str) -> Dict[str, Any]:
-        """Get company information from QuickBooks"""
-        print(f"DEBUG: Getting company info for realm_id: {realm_id}")
-        tokens = self._get_tokens(realm_id)
-
-        url = f"{self.base_url}/{realm_id}/companyinfo/{realm_id}"
-        headers = {
-            "Authorization": f"Bearer {tokens['access_token']}",
-            "Accept": "application/json",
-        }
-
-        print(f"DEBUG: Making request to: {url}")
-        response = requests.get(url, headers=headers)
-        print(f"DEBUG: Response status: {response.status_code}")
-
-        if response.status_code != 200:
-            print(f"DEBUG: Response body: {response.text[:500]}")
-
-            # Try refreshing token if unauthorized
-            if response.status_code == 401:
-                print("DEBUG: Attempting to refresh token")
-                refreshed_tokens = self._refresh_access_token(tokens["refresh_token"])
-                self._save_tokens(refreshed_tokens, realm_id)
-
-                # Retry with new token
-                headers["Authorization"] = f"Bearer {refreshed_tokens['access_token']}"
-                response = requests.get(url, headers=headers)
-
-                if response.status_code != 200:
-                    raise HTTPException(
-                        status_code=response.status_code,
-                        detail=f"Failed to fetch company info after token refresh: {response.text[:200]}",
-                    )
-            else:
-                raise HTTPException(
-                    status_code=response.status_code,
-                    detail=f"Failed to fetch company info: {response.text[:200]}",
-                )
-
-        return response.json()
-
-
-def get_cash_accounts(self, realm_id: str) -> Dict:
-    """Get cash and bank accounts from QuickBooks"""
-    tokens = self._get_tokens(realm_id)
-
-    url = f"{self.base_url}/{realm_id}/query"
-    headers = {
-        "Authorization": f"Bearer {tokens['access_token']}",
-        "Accept": "application/json",
-    }
-
-    # Query only cash/bank accounts
-    query = "SELECT * FROM Account WHERE AccountType IN ('Bank', 'Other Current Asset') AND Active = true"
-    params = {"query": query}
-
-    # Similar error handling as in get_accounts
-    response = requests.get(url, headers=headers, params=params)
-    # handle errors and refresh token if needed
-
-    return response.json()
-
-
-def get_transaction_history(self, realm_id: str, days: int = 90) -> Dict:
-    """Get recent transaction history"""
-    tokens = self._get_tokens(realm_id)
-
-    url = f"{self.base_url}/{realm_id}/query"
-    headers = {
-        "Authorization": f"Bearer {tokens['access_token']}",
-        "Accept": "application/json",
-    }
-
-    # Calculate date range
-    end_date = datetime.datetime.now()
-    start_date = end_date - datetime.timedelta(days=days)
-
-    # Query for recent transactions
-    query = f"SELECT * FROM Transaction WHERE TxnDate >= '{start_date.strftime('%Y-%m-%d')}' AND TxnDate <= '{end_date.strftime('%Y-%m-%d')}' ORDER BY TxnDate DESC"
-    params = {"query": query}
-
-    response = requests.get(url, headers=headers, params=params)
-    # handle errors and refresh token if needed
-
-    return response.json()
+        # Make authenticated request and return formatted cash flow statement

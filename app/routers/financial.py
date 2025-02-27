@@ -2,6 +2,8 @@
 from fastapi import APIRouter, HTTPException, Depends
 from ..services.quickbooks import QuickBooksService
 from fastapi.requests import Request
+from fastapi.responses import RedirectResponse
+from fastapi.params import Query
 
 router = APIRouter(prefix="/api/financial", tags=["financial"])
 
@@ -73,3 +75,35 @@ async def get_cash_flow(
         raise HTTPException(
             status_code=500, detail=f"Error fetching cash flow: {str(e)}"
         )
+
+
+@router.get("/callback/quickbooks")
+async def quickbooks_callback(
+    code: str = Query(None),
+    state: str = Query(None),
+    realmId: str = Query(None),
+    error: str = Query(None),
+    qb_service: QuickBooksService = Depends(),
+):
+    """Handle OAuth callback from QuickBooks"""
+    if error:
+        # Log the error
+        print(f"OAuth error: {error}")
+        # Redirect to error page
+        return RedirectResponse(url="/oauth-error")
+
+    if not code or not realmId:
+        return HTTPException(status_code=400, detail="Missing required parameters")
+
+    try:
+        # Exchange authorization code for access token
+        tokens = await qb_service.get_tokens(code, realmId)
+
+        # Store tokens in your database
+        await qb_service.save_tokens(tokens, realmId)
+
+        # Redirect to dashboard with realmId
+        return RedirectResponse(url=f"/dashboard?realm_id={realmId}")
+    except Exception as e:
+        print(f"Error in QuickBooks callback: {str(e)}")
+        return HTTPException(status_code=500, detail=f"OAuth error: {str(e)}")

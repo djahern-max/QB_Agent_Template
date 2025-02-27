@@ -20,13 +20,22 @@ class FinancialAnalysis(Base):
     __tablename__ = "financial_analyses"
 
     id = Column(Integer, primary_key=True)
-    realm_id = Column(
-        String, nullable=False
-    )  # Foreign key relation to QuickBooksTokens
+    realm_id = Column(String, nullable=False)
     analysis_date = Column(DateTime, server_default=func.now())
+
+    # Keep existing fields
     summary = Column(Text)
-    positive_insights = Column(Text)  # Store as JSON string
-    concerns = Column(Text)  # Store as JSON string
-    recommendations = Column(Text)  # Store as JSON string
+    positive_insights = Column(Text)
+    concerns = Column(Text)
+    recommendations = Column(Text)
+
+    # Add fields to store raw statement data (optional)
+    profit_loss_data = Column(Text)  # Store as JSON string
+    balance_sheet_data = Column(Text)  # Store as JSON string
+    cash_flow_data = Column(Text)  # Store as JSON string
+
+    # Add fields to store trend data
+    trend_data = Column(Text)  # Store trends as JSON string
+
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, onupdate=func.now())

@@ -157,3 +157,25 @@ async def get_accounts_by_realm(
         raise HTTPException(
             status_code=500, detail=f"Error fetching accounts: {str(e)}"
         )
+
+
+@router.get("/statements/trends/{realm_id}")
+async def get_financial_trends(
+    realm_id: str,
+    db: Session = Depends(get_db),
+    qb_service: QuickBooksService = Depends(get_quickbooks_service),
+):
+    """Get financial trends analysis"""
+    try:
+        # Create financial statements service
+        from ..services.financial_statements import FinancialStatementsService
+
+        fs_service = FinancialStatementsService(qb_service)
+
+        # Generate trends analysis
+        trends = await fs_service.analyze_financial_trends(realm_id, db)
+        return trends
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error analyzing financial trends: {str(e)}"
+        )

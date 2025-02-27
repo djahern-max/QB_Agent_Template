@@ -63,10 +63,10 @@ async def get_routes():
     return {"routes": routes}
 
 
-@app.get("/routes-simple", response_class=PlainTextResponse)
-async def get_routes_simple():
+@app.get("/api/routes-simple", response_class=PlainTextResponse)
+async def get_routes_simple_with_prefix():
     """
-    Returns a concise list of all routes with their paths and methods.
+    Returns a concise list of all routes with their paths and methods (with API prefix).
     """
     routes = []
     for route in app.routes:

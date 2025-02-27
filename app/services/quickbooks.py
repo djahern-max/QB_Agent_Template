@@ -267,18 +267,16 @@ class QuickBooksService:
             return token_record.realm_id
 
         # If no token found, use a fallback for development
-        return os.getenv("QUICKBOOKS_TEST_REALM_ID", "your_skynet_realm_id_here")
+        realm_id = os.getenv("QUICKBOOKS_REALM_ID")
+        if not realm_id:
+            logger.error("No QuickBooks realm ID available")
+            raise ValueError(
+                "No QuickBooks realm ID available. Please connect to QuickBooks first."
+            )
+
+        return realm_id
 
     async def get_connection_status(self, realm_id: str):
-        """
-        Check if the connection to QuickBooks is active for the given realm
-
-        Args:
-            realm_id: QuickBooks realm ID
-
-        Returns:
-            Dict with connection status information
-        """
         try:
             # Check if we have valid tokens for this realm
             token_record = (
@@ -293,58 +291,40 @@ class QuickBooksService:
             # Check if tokens are expired
             current_time = datetime.now()
             if token_record.expires_at < current_time:
-                # Try to refresh the token
-                try:
-                    # You would implement token refresh logic here
-                    # For now, just return that tokens are expired
-                    return {"connected": False, "reason": "Tokens expired"}
-                except Exception as e:
-                    logger.error(f"Error refreshing tokens: {str(e)}")
-                    return {"connected": False, "reason": "Token refresh failed"}
+                # Token refresh logic here
+                return {"connected": False, "reason": "Tokens expired"}
 
-            # If we have valid tokens, the connection is active
-            return {"connected": True, "company_name": "Your Company Name"}
+            # If we have valid tokens, try to get the company info
+            try:
+                # Get the auth token
+                auth_token = token_record.access_token
+
+                # Prepare URL and headers
+                base_url = "https://quickbooks.api.intuit.com"
+                url = f"{base_url}/v3/company/{realm_id}/companyinfo/{realm_id}"
+
+                headers = {
+                    "Authorization": f"Bearer {auth_token}",
+                    "Accept": "application/json",
+                }
+
+                # Make the API request
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url, headers=headers) as response:
+                        if response.status == 200:
+                            company_data = await response.json()
+                            company_name = company_data.get("CompanyInfo", {}).get(
+                                "CompanyName", "Your Company"
+                            )
+                            return {"connected": True, "company_name": company_name}
+                        else:
+                            # If we can't get the company info but have valid tokens, still return connected
+                            return {"connected": True, "company_name": "Your Company"}
+            except Exception as e:
+                logger.error(f"Error getting company info: {str(e)}")
+                # If we can't get the company info but have valid tokens, still return connected
+                return {"connected": True, "company_name": "Your Company"}
 
         except Exception as e:
             logger.error(f"Error checking connection status: {str(e)}")
             return {"connected": False, "reason": str(e)}
-
-    async def get_auth_url(self):
-        """
-        Generate authorization URL for QuickBooks OAuth
-
-        Returns:
-            Dict containing the authorization URL
-        """
-        try:
-            # Get environment variables
-            client_id = os.getenv("QUICKBOOKS_CLIENT_ID")
-            redirect_uri = os.getenv("QUICKBOOKS_REDIRECT_URI")
-
-            if not client_id or not redirect_uri:
-                raise Exception(
-                    "Missing QuickBooks API credentials in environment variables"
-                )
-
-            # Generate a random state value for CSRF protection
-            state = "".join(
-                random.choices("0123456789abcdefghijklmnopqrstuvwxyz", k=32)
-            )
-
-            # Construct the authorization URL
-            base_url = "https://appcenter.intuit.com/connect/oauth2"
-            params = {
-                "client_id": client_id,
-                "response_type": "code",
-                "scope": "com.intuit.quickbooks.accounting",
-                "redirect_uri": redirect_uri,
-                "state": state,
-            }
-
-            auth_url = f"{base_url}?{'&'.join([f'{k}={v}' for k, v in params.items()])}"
-
-            return {"auth_url": auth_url}
-
-        except Exception as e:
-            logger.error(f"Error generating auth URL: {str(e)}")
-            raise Exception(f"Could not generate authorization URL: {str(e)}")

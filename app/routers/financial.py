@@ -8,6 +8,8 @@ from ..database import get_db
 from sqlalchemy.orm import Session
 from typing import Optional
 import logging
+import aiohttp
+
 
 logger = logging.getLogger(__name__)
 
@@ -190,4 +192,19 @@ async def get_financial_trends(
         logger.error(f"Error analyzing financial trends: {str(e)}")
         raise HTTPException(
             status_code=500, detail=f"Error analyzing financial trends: {str(e)}"
+        )
+
+
+@router.get("/financial/accounts/{realm_id}", response_model=dict)
+async def get_quickbooks_accounts(realm_id: str, db: Session = Depends(get_db)):
+    """
+    Retrieve all accounts for a given QuickBooks realm ID.
+    """
+    try:
+        quickbooks_service = QuickBooksService(db)
+        accounts = await quickbooks_service.get_accounts_by_realm(realm_id)
+        return accounts
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error fetching accounts: {str(e)}"
         )

@@ -20,8 +20,8 @@ def get_quickbooks_service(db: Session = Depends(get_db)):
 async def get_auth_url(qb_service: QuickBooksService = Depends(get_quickbooks_service)):
     """Generate QuickBooks auth URL"""
     try:
-        auth_url = await qb_service.get_auth_url()
-        return {"auth_url": auth_url}
+        # Just return the result directly
+        return await qb_service.get_auth_url()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

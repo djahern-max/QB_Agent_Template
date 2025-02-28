@@ -741,7 +741,6 @@ class FinancialAnalysisAgent:
                 ],
                 temperature=0.2,
                 max_tokens=1000,
-                response_format={"type": "json_object"},  # Ensure JSON response format
             )
 
             # Extract response

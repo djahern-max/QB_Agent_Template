@@ -356,93 +356,55 @@ class FinancialAnalysisAgent:
         formatted_lines.append(f"Basis: {header.get('ReportBasis', 'N/A')}")
         formatted_lines.append("")
 
-        # Process actual financial data
+        # Process rows
         rows = profit_loss_data.get("Rows", {}).get("Row", [])
 
         if not rows:
             return "No financial data available."
 
-        for row in rows:
-            summary = row.get("Summary", {})
+        # Process sections (Income, COGS, Expenses, etc.)
+        for section in rows:
+            # Get section header
+            header_data = section.get("Header", {}).get("ColData", [])
+            if header_data and len(header_data) > 0:
+                section_name = header_data[0].get("value", "")
+                if section_name:
+                    formatted_lines.append(f"## {section_name}")
+                    formatted_lines.append("")
+
+            # Process line items within the section
+            section_rows = section.get("Rows", {}).get("Row", [])
+            if section_rows:
+                for item in section_rows:
+                    if item.get("type") == "Data" and "ColData" in item:
+                        col_data = item.get("ColData", [])
+                        if len(col_data) >= 2:
+                            name = col_data[0].get("value", "Unknown")
+                            amount = col_data[1].get("value", "0.00")
+                            formatted_lines.append(f"- {name}: ${amount}")
+
+                formatted_lines.append("")
+
+            # Process section summary
+            summary = section.get("Summary", {})
             if summary and "ColData" in summary:
-                label = summary["ColData"][0].get("value", "Total")
-                value = summary["ColData"][1].get("value", "0.00")
-                formatted_lines.append(f"{label}: {value}")
+                col_data = summary.get("ColData", [])
+                if len(col_data) >= 2:
+                    label = col_data[0].get("value", "Total")
+                    value = col_data[1].get("value", "0.00")
+                    formatted_lines.append(f"**{label}**: ${value}")
+                    formatted_lines.append("")
+
+        # Add overall summary from the last section (usually Net Income)
+        if rows and "Summary" in rows[-1]:
+            net_summary = rows[-1].get("Summary", {}).get("ColData", [])
+            if len(net_summary) >= 2:
+                label = net_summary[0].get("value", "")
+                value = net_summary[1].get("value", "")
+                if label and value:
+                    formatted_lines.append(f"## {label}: ${value}")
 
         return "\n".join(formatted_lines)
-
-    async def analyze_balance_sheet(self, balance_sheet_data: Dict) -> Dict:
-        """
-        Analyze balance sheet with GPT-4
-
-        Parameters:
-        - balance_sheet_data: Dictionary containing the Balance Sheet data from QuickBooks
-
-        Returns:
-        - Dictionary containing the analysis
-        """
-        try:
-            # Format the data for the prompt
-            bs_summary = self._format_bs_for_analysis(balance_sheet_data)
-
-            # Create prompt for GPT-4
-            prompt = f"""
-            As a financial analyst, review the following Balance Sheet and provide insights:
-            
-            # Balance Sheet
-            {bs_summary}
-            
-            Please provide:
-            1. A concise summary of the financial position (2-3 sentences)
-            2. 5 key insights about the balance sheet, focusing on assets, liabilities, and equity
-            3. 3 actionable recommendations based on this Balance Sheet
-            
-            Format your response as JSON with the following structure:
-            {{
-                "summary": "Overall financial summary in 2-3 sentences",
-                "insights": [
-                    "Insight 1",
-                    "Insight 2",
-                    "Insight 3",
-                    "Insight 4",
-                    "Insight 5"
-                ],
-                "recommendations": [
-                    "Recommendation 1",
-                    "Recommendation 2",
-                    "Recommendation 3"
-                ]
-            }}
-            """
-
-            # Call OpenAI API
-            response = self.client.chat.completions.create(
-                model="gpt-4",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "You are a financial analysis AI specialized in providing insights from financial statements.",
-                    },
-                    {"role": "user", "content": prompt},
-                ],
-                temperature=0.2,
-                max_tokens=1000,
-            )
-
-            # Extract and parse response
-            response_content = response.choices[0].message.content
-
-            try:
-                analysis = json.loads(response_content)
-                return analysis
-            except json.JSONDecodeError:
-                return {
-                    "error": "Could not parse GPT response as JSON",
-                    "raw_response": response_content,
-                }
-
-        except Exception as e:
-            return {"error": f"Analysis failed: {str(e)}"}
 
     def _format_bs_for_analysis(self, balance_sheet_data: Dict) -> str:
         """Format Balance Sheet data for GPT analysis"""
@@ -669,25 +631,35 @@ class FinancialAnalysisAgent:
             # Profit & Loss Statement
             {pl_summary}
             
-            Please provide:
+            Based on the detailed line items and totals above, please provide:
             1. A concise summary of the financial position (2-3 sentences)
-            2. 5 key insights about the data, focusing on revenue, expenses, and profitability
-            3. 3 actionable recommendations based on this P&L statement
-            
+            2. 5 key insights about the data, focusing on:
+            - Revenue mix and concentration (examine each revenue stream)
+            - Expense patterns and efficiency
+            - Gross margin and profitability metrics
+            - Any unusual patterns or outliers
+            - Overall business financial health
+
+            3. 3 actionable recommendations based on this P&L statement, considering:
+            - The business's technology focus
+            - Revenue diversification opportunities
+            - Expense management and efficiency improvements
+            - Growth opportunities based on the highest-performing revenue streams
+
             Format your response as JSON with the following structure:
             {{
                 "summary": "Overall financial summary in 2-3 sentences",
                 "insights": [
-                    "Insight 1",
-                    "Insight 2",
-                    "Insight 3",
-                    "Insight 4",
-                    "Insight 5"
+                    "Specific insight 1 about revenue streams and their relative contribution",
+                    "Specific insight 2 about expense patterns and areas of concern",
+                    "Specific insight 3 about profitability metrics compared to industry standards",
+                    "Specific insight 4 about potential growth opportunities based on performance",
+                    "Specific insight 5 about overall financial health and risk assessment"
                 ],
                 "recommendations": [
-                    "Recommendation 1",
-                    "Recommendation 2",
-                    "Recommendation 3"
+                    "Specific recommendation 1 with clear actionable steps",
+                    "Specific recommendation 2 with clear actionable steps",
+                    "Specific recommendation 3 with clear actionable steps"
                 ]
             }}
 

@@ -346,7 +346,6 @@ class FinancialAnalysisAgent:
 
     def _format_pl_for_analysis(self, profit_loss_data: Dict) -> str:
         """Format P&L data for GPT analysis"""
-        # Extract relevant information
         formatted_lines = []
 
         # Header information
@@ -357,52 +356,18 @@ class FinancialAnalysisAgent:
         formatted_lines.append(f"Basis: {header.get('ReportBasis', 'N/A')}")
         formatted_lines.append("")
 
-        # Process rows
+        # Process actual financial data
         rows = profit_loss_data.get("Rows", {}).get("Row", [])
 
-        # Extract key sections
+        if not rows:
+            return "No financial data available."
+
         for row in rows:
-            group = row.get("group", "")
             summary = row.get("Summary", {})
-
-            if group in [
-                "Income",
-                "COGS",
-                "Expenses",
-                "GrossProfit",
-                "NetOperatingIncome",
-                "NetIncome",
-            ]:
-                # Add section header
-                if group == "Income":
-                    formatted_lines.append("## INCOME")
-                elif group == "COGS":
-                    formatted_lines.append("## COST OF GOODS SOLD")
-                elif group == "Expenses":
-                    formatted_lines.append("## EXPENSES")
-                elif group == "GrossProfit":
-                    formatted_lines.append("## GROSS PROFIT")
-                elif group == "NetOperatingIncome":
-                    formatted_lines.append("## NET OPERATING INCOME")
-                elif group == "NetIncome":
-                    formatted_lines.append("## NET INCOME")
-
-                # Add details if this is a section with rows
-                if "Rows" in row and "Row" in row["Rows"]:
-                    for detail in row["Rows"]["Row"]:
-                        if detail.get("type") == "Data" and "ColData" in detail:
-                            name = detail["ColData"][0].get("value", "Unknown")
-                            amount = detail["ColData"][1].get("value", "0.00")
-                            formatted_lines.append(f"{name}: {amount}")
-
-                # Add summary line
-                if summary and "ColData" in summary:
-                    label = summary["ColData"][0].get("value", "Total")
-                    value = summary["ColData"][1].get("value", "0.00")
-                    formatted_lines.append(f"{label}: {value}")
-
-                # Add spacing between sections
-                formatted_lines.append("")
+            if summary and "ColData" in summary:
+                label = summary["ColData"][0].get("value", "Total")
+                value = summary["ColData"][1].get("value", "0.00")
+                formatted_lines.append(f"{label}: {value}")
 
         return "\n".join(formatted_lines)
 

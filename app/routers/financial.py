@@ -283,6 +283,9 @@ async def analyze_financial_data(
         # Create the financial analysis agent
         agent = FinancialAnalysisAgent(db)
 
+        # Log the data being sent for analysis
+        logger.debug(f"Analyzing {report_type} data")
+
         # Format the prompt based on report type
         if report_type == "profit-loss":
             analysis = await agent.analyze_profit_loss(data)
@@ -291,7 +294,37 @@ async def analyze_financial_data(
         elif report_type == "cash-flow":
             analysis = await agent.analyze_cash_flow(data)
 
+        # Log the analysis result
+        logger.debug(f"Analysis result: {analysis}")
+
+        # Check if the analysis contains an error
+        if "error" in analysis:
+            logger.error(f"Analysis error: {analysis['error']}")
+            return JSONResponse(
+                status_code=500,
+                content={"error": analysis["error"]},
+            )
+
+        # If the response doesn't have the expected structure, add default values
+        if "summary" not in analysis:
+            analysis["summary"] = "Analysis completed successfully."
+        if "insights" not in analysis:
+            analysis["insights"] = []
+        if "recommendations" not in analysis:
+            analysis["recommendations"] = []
+
         return analysis
     except Exception as e:
         logger.error(f"Error analyzing financial data: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+        # Return a structured error response
+        return JSONResponse(
+            status_code=500,
+            content={
+                "error": f"Analysis failed: {str(e)}",
+                "summary": "Analysis could not be completed due to an error.",
+                "insights": [],
+                "recommendations": [
+                    "Please try again or contact support if the issue persists."
+                ],
+            },
+        )

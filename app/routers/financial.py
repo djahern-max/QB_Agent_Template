@@ -289,29 +289,31 @@ async def analyze_financial_data(
         # Log the data being sent for analysis
         logger.debug(f"Analyzing {report_type} data")
 
-        try:
-            # Format the prompt based on report type
-            if report_type == "profit-loss":
-                analysis = await agent.analyze_profit_loss(data)
-            elif report_type == "balance-sheet":
-                analysis = await agent.analyze_balance_sheet(data)
-            elif report_type == "cash-flow":
-                analysis = await agent.analyze_cash_flow(data)
+        # Format the prompt based on report type
+        if report_type == "profit-loss":
+            analysis = await agent.analyze_profit_loss(data)
+        elif report_type == "balance-sheet":
+            analysis = await agent.analyze_balance_sheet(data)
+        elif report_type == "cash-flow":
+            analysis = await agent.analyze_cash_flow(data)
 
-            # Log the analysis result
-            logger.debug(f"Analysis result: {analysis}")
+        # Log the analysis result
+        logger.debug(f"Analysis result: {analysis}")
 
-            # Check if the analysis contains an error
-            if "error" in analysis:
-                logger.error(f"Analysis error: {analysis['error']}")
-                # Instead of returning an error, use fallback data
-                analysis = get_fallback_analysis(report_type)
-        except Exception as inner_error:
-            logger.error(f"Error in GPT analysis: {str(inner_error)}")
-            # Use fallback data on any error
-            analysis = get_fallback_analysis(report_type)
+        # Check if the analysis contains an error
+        if "error" in analysis:
+            logger.error(f"Analysis error: {analysis['error']}")
+            return JSONResponse(
+                status_code=500,
+                content={
+                    "error": analysis["error"],
+                    "summary": analysis.get("summary", "Analysis failed."),
+                    "insights": analysis.get("insights", []),
+                    "recommendations": analysis.get("recommendations", []),
+                },
+            )
 
-        # Ensure response has the expected structure
+        # If the response doesn't have the expected structure, add default values
         if "summary" not in analysis:
             analysis["summary"] = "Analysis completed successfully."
         if "insights" not in analysis:
@@ -322,8 +324,18 @@ async def analyze_financial_data(
         return analysis
     except Exception as e:
         logger.error(f"Error analyzing financial data: {str(e)}")
-        # Return fallback data on error
-        return get_fallback_analysis(report_type)
+        # Return a structured error response
+        return JSONResponse(
+            status_code=500,
+            content={
+                "error": f"Analysis failed: {str(e)}",
+                "summary": "Analysis could not be completed due to an error.",
+                "insights": ["The analysis failed due to a technical issue."],
+                "recommendations": [
+                    "Please try again or contact support if the issue persists."
+                ],
+            },
+        )
 
 
 def get_fallback_analysis(report_type: str) -> Dict[str, Any]:

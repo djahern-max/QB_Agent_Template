@@ -135,31 +135,49 @@ class QuickBooksService:
     ) -> Dict[str, Any]:
         """
         Get a report from the QuickBooks Online API.
-
-        Args:
-            realm_id: QuickBooks realm ID
-            report_type: Type of report (e.g., "ProfitAndLoss", "BalanceSheet", "CashFlow")
-            params: Additional parameters for the report query
-
-        Returns:
-            Dict containing the report data
         """
         try:
             # Get access token from database or refresh if needed
             auth_token = await self._get_access_token(realm_id)
 
-            # Prepare URL and headers
-            base_url = "https://sandbox-quickbooks.api.intuit.com"  # Use the appropriate environment URL
+            # Check if we're in sandbox or production
+            is_sandbox = (
+                os.getenv("QUICKBOOKS_ENVIRONMENT", "production").lower() == "sandbox"
+            )
+
+            # Prepare URL and headers based on environment
+            if is_sandbox:
+                base_url = "https://sandbox-quickbooks.api.intuit.com"
+            else:
+                base_url = "https://quickbooks.api.intuit.com"
+
             url = f"{base_url}/v3/company/{realm_id}/reports/{report_type}"
 
+            # Prepare headers with proper Accept format
             headers = {
                 "Authorization": f"Bearer {auth_token}",
                 "Accept": "application/json",
+                "Content-Type": "application/json",
             }
+
+            # Ensure params dictionary exists
+            if params is None:
+                params = {}
+
+            # Add minorversion parameter if not present
+            if "minorversion" not in params:
+                params["minorversion"] = "65"  # Use the latest minor version
+
+            # Log the request details for debugging
+            logger.debug(f"Making report request to {url} with params {params}")
 
             # Make API request
             async with aiohttp.ClientSession() as session:
                 async with session.get(url, headers=headers, params=params) as response:
+                    # Log the response status and headers for debugging
+                    logger.debug(f"Report response status: {response.status}")
+                    logger.debug(f"Report response headers: {response.headers}")
+
                     if response.status == 200:
                         return await response.json()
                     else:

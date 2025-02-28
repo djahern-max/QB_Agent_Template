@@ -328,3 +328,41 @@ class QuickBooksService:
         except Exception as e:
             logger.error(f"Error checking connection status: {str(e)}")
             return {"connected": False, "reason": str(e)}
+
+    async def get_auth_url(self):
+        """
+        Generate an OAuth authorization URL for QuickBooks Online.
+        """
+        try:
+            # Get environment variables
+            client_id = os.getenv("QUICKBOOKS_CLIENT_ID")
+            redirect_uri = os.getenv("QUICKBOOKS_REDIRECT_URI")
+
+            if not client_id or not redirect_uri:
+                raise Exception(
+                    "Missing QuickBooks API credentials in environment variables"
+                )
+
+            # Generate a random state parameter for security
+            state = "".join(
+                random.choice("0123456789abcdefghijklmnopqrstuvwxyz") for _ in range(32)
+            )
+
+            # Create authorization URL
+            auth_endpoint = "https://appcenter.intuit.com/connect/oauth2"
+            scope = "com.intuit.quickbooks.accounting"
+
+            auth_url = (
+                f"{auth_endpoint}?"
+                f"client_id={client_id}&"
+                f"response_type=code&"
+                f"scope={scope}&"
+                f"redirect_uri={redirect_uri}&"
+                f"state={state}"
+            )
+
+            return {"auth_url": auth_url}
+
+        except Exception as e:
+            logger.error(f"Error generating auth URL: {str(e)}")
+            raise Exception(f"Could not generate authorization URL: {str(e)}")

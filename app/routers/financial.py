@@ -240,3 +240,30 @@ async def disconnect_quickbooks(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Error disconnecting: {str(e)}")
+
+
+@router.get("/trends/{realm_id}")
+async def get_financial_trends(
+    realm_id: str,
+    months: int = Query(6, ge=1, le=12),
+    qb_service: QuickBooksService = Depends(get_quickbooks_service),
+):
+    """Get financial trend analysis"""
+    try:
+        # Import the FinancialTrendsService
+        from ..services.financial_trends import FinancialTrendsService
+
+        # Create the service with the QuickBooks service
+        trends_service = FinancialTrendsService(qb_service)
+
+        # Get trends data
+        trend_data = await trends_service.get_monthly_profit_loss_trend(
+            realm_id, months
+        )
+
+        return trend_data
+    except Exception as e:
+        logger.error(f"Error analyzing financial trends: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error analyzing financial trends: {str(e)}"
+        )

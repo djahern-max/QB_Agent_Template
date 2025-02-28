@@ -12,6 +12,8 @@ import aiohttp
 from ..database import get_db
 from ..models import QuickBooksTokens
 from ..services.quickbooks import QuickBooksService
+from typing import Dict, Any
+from ..agents.financial_agent.agent import FinancialAnalysisAgent
 
 
 logger = logging.getLogger(__name__)
@@ -267,3 +269,29 @@ async def get_financial_trends(
         raise HTTPException(
             status_code=500, detail=f"Error analyzing financial trends: {str(e)}"
         )
+
+
+@router.post("/analyze/{report_type}")
+async def analyze_financial_data(
+    report_type: str, data: Dict[str, Any], db: Session = Depends(get_db)
+):
+    """Analyze financial data with AI"""
+    if report_type not in ["profit-loss", "balance-sheet", "cash-flow"]:
+        raise HTTPException(status_code=400, detail="Invalid report type")
+
+    try:
+        # Create the financial analysis agent
+        agent = FinancialAnalysisAgent(db)
+
+        # Format the prompt based on report type
+        if report_type == "profit-loss":
+            analysis = await agent.analyze_profit_loss(data)
+        elif report_type == "balance-sheet":
+            analysis = await agent.analyze_balance_sheet(data)
+        elif report_type == "cash-flow":
+            analysis = await agent.analyze_cash_flow(data)
+
+        return analysis
+    except Exception as e:
+        logger.error(f"Error analyzing financial data: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")

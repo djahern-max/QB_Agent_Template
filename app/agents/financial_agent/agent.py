@@ -173,100 +173,478 @@ class FinancialAnalysisAgent:
 
         return "\n".join(formatted_accounts)
 
-
-async def forecast_cash_flow(self, accounts_data: Dict) -> Dict:
-    """
-    Generate a cash flow forecast based on account data
-
-    Parameters:
-    - accounts_data: Dictionary containing the accounts data from QuickBooks
-
-    Returns:
-    - Dictionary containing the forecast and recommendations
-    """
-    try:
-        # Format accounts data for the prompt
-        accounts_summary = self._format_accounts_for_analysis(accounts_data)
-
-        # Create prompt for GPT-4
-        prompt = f"""
-        As a financial analyst specialized in cash flow management, review the following chart of accounts and provide a 90-day cash flow forecast:
-        
-        # Chart of Accounts
-        {accounts_summary}
-        
-        Based on this financial data, please provide:
-        1. A 90-day cash flow forecast broken down by month (next 3 months)
-        2. Key factors that will likely impact cash flow in the next 90 days
-        3. Three actionable recommendations to improve cash flow
-        4. Potential cash flow risks to be aware of
-        
-        Format your response as JSON with the following structure:
-        {{
-            "forecast": {{
-                "month1": {{
-                    "inflow": [estimated inflow in dollars],
-                    "outflow": [estimated outflow in dollars],
-                    "net_change": [net cash flow]
-                }},
-                "month2": {{
-                    "inflow": [estimated inflow in dollars],
-                    "outflow": [estimated outflow in dollars],
-                    "net_change": [net cash flow]
-                }},
-                "month3": {{
-                    "inflow": [estimated inflow in dollars],
-                    "outflow": [estimated outflow in dollars],
-                    "net_change": [net cash flow]
-                }}
-            }},
-            "impact_factors": [
-                {{
-                    "title": "Brief Title",
-                    "description": "Detailed explanation"
-                }}
-            ],
-            "recommendations": [
-                {{
-                    "title": "Brief Title",
-                    "description": "Detailed explanation"
-                }}
-            ],
-            "risks": [
-                {{
-                    "title": "Brief Title",
-                    "description": "Detailed explanation"
-                }}
-            ]
-        }}
+    async def forecast_cash_flow(self, accounts_data: Dict) -> Dict:
         """
+        Generate a cash flow forecast based on account data
 
-        # Call OpenAI API
-        response = self.client.chat.completions.create(
-            model="gpt-4",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a financial analysis AI specialized in cash flow forecasting and management.",
-                },
-                {"role": "user", "content": prompt},
-            ],
-            temperature=0.2,
-            max_tokens=1200,
-        )
+        Parameters:
+        - accounts_data: Dictionary containing the accounts data from QuickBooks
 
-        # Extract response
-        response_content = response.choices[0].message.content
-
-        # Parse JSON
+        Returns:
+        - Dictionary containing the forecast and recommendations
+        """
         try:
-            forecast = json.loads(response_content)
-            return forecast
-        except json.JSONDecodeError:
-            return {
-                "error": "Could not parse GPT response as JSON",
-                "raw_response": response_content,
-            }
+            # Format accounts data for the prompt
+            accounts_summary = self._format_accounts_for_analysis(accounts_data)
 
-    except Exception as e:
-        return {"error": f"Forecasting failed: {str(e)}"}
+            # Create prompt for GPT-4
+            prompt = f"""
+            As a financial analyst specialized in cash flow management, review the following chart of accounts and provide a 90-day cash flow forecast:
+            
+            # Chart of Accounts
+            {accounts_summary}
+            
+            Based on this financial data, please provide:
+            1. A 90-day cash flow forecast broken down by month (next 3 months)
+            2. Key factors that will likely impact cash flow in the next 90 days
+            3. Three actionable recommendations to improve cash flow
+            4. Potential cash flow risks to be aware of
+            
+            Format your response as JSON with the following structure:
+            {{
+                "forecast": {{
+                    "month1": {{
+                        "inflow": [estimated inflow in dollars],
+                        "outflow": [estimated outflow in dollars],
+                        "net_change": [net cash flow]
+                    }},
+                    "month2": {{
+                        "inflow": [estimated inflow in dollars],
+                        "outflow": [estimated outflow in dollars],
+                        "net_change": [net cash flow]
+                    }},
+                    "month3": {{
+                        "inflow": [estimated inflow in dollars],
+                        "outflow": [estimated outflow in dollars],
+                        "net_change": [net cash flow]
+                    }}
+                }},
+                "impact_factors": [
+                    {{
+                        "title": "Brief Title",
+                        "description": "Detailed explanation"
+                    }}
+                ],
+                "recommendations": [
+                    {{
+                        "title": "Brief Title",
+                        "description": "Detailed explanation"
+                    }}
+                ],
+                "risks": [
+                    {{
+                        "title": "Brief Title",
+                        "description": "Detailed explanation"
+                    }}
+                ]
+            }}
+            """
+
+            # Call OpenAI API
+            response = self.client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a financial analysis AI specialized in cash flow forecasting and management.",
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=0.2,
+                max_tokens=1200,
+            )
+
+            # Extract response
+            response_content = response.choices[0].message.content
+
+            # Parse JSON
+            try:
+                forecast = json.loads(response_content)
+                return forecast
+            except json.JSONDecodeError:
+                return {
+                    "error": "Could not parse GPT response as JSON",
+                    "raw_response": response_content,
+                }
+
+        except Exception as e:
+            return {"error": f"Forecasting failed: {str(e)}"}
+
+    async def analyze_profit_loss(self, profit_loss_data: Dict) -> Dict:
+        """
+        Analyze profit & loss statement with GPT-4
+
+        Parameters:
+        - profit_loss_data: Dictionary containing the P&L data from QuickBooks
+
+        Returns:
+        - Dictionary containing the analysis
+        """
+        try:
+            # Format the data for the prompt
+            pl_summary = self._format_pl_for_analysis(profit_loss_data)
+
+            # Create prompt for GPT-4
+            prompt = f"""
+            As a financial analyst, review the following Profit & Loss statement and provide insights:
+            
+            # Profit & Loss Statement
+            {pl_summary}
+            
+            Please provide:
+            1. A concise summary of the financial position (2-3 sentences)
+            2. 5 key insights about the data, focusing on revenue, expenses, and profitability
+            3. 3 actionable recommendations based on this P&L statement
+            
+            Format your response as JSON with the following structure:
+            {{
+                "summary": "Overall financial summary in 2-3 sentences",
+                "insights": [
+                    "Insight 1",
+                    "Insight 2",
+                    "Insight 3",
+                    "Insight 4",
+                    "Insight 5"
+                ],
+                "recommendations": [
+                    "Recommendation 1",
+                    "Recommendation 2",
+                    "Recommendation 3"
+                ]
+            }}
+            """
+
+            # Call OpenAI API
+            response = self.client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a financial analysis AI specialized in providing insights from financial statements.",
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=0.2,
+                max_tokens=1000,
+            )
+
+            # Extract and parse response
+            response_content = response.choices[0].message.content
+
+            try:
+                analysis = json.loads(response_content)
+                return analysis
+            except json.JSONDecodeError:
+                return {
+                    "error": "Could not parse GPT response as JSON",
+                    "raw_response": response_content,
+                }
+
+        except Exception as e:
+            return {"error": f"Analysis failed: {str(e)}"}
+
+    def _format_pl_for_analysis(self, profit_loss_data: Dict) -> str:
+        """Format P&L data for GPT analysis"""
+        # Extract relevant information
+        formatted_lines = []
+
+        # Header information
+        header = profit_loss_data.get("Header", {})
+        formatted_lines.append(
+            f"Period: {header.get('StartPeriod', 'N/A')} to {header.get('EndPeriod', 'N/A')}"
+        )
+        formatted_lines.append(f"Basis: {header.get('ReportBasis', 'N/A')}")
+        formatted_lines.append("")
+
+        # Process rows
+        rows = profit_loss_data.get("Rows", {}).get("Row", [])
+
+        # Extract key sections
+        for row in rows:
+            group = row.get("group", "")
+            summary = row.get("Summary", {})
+
+            if group in [
+                "Income",
+                "COGS",
+                "Expenses",
+                "GrossProfit",
+                "NetOperatingIncome",
+                "NetIncome",
+            ]:
+                # Add section header
+                if group == "Income":
+                    formatted_lines.append("## INCOME")
+                elif group == "COGS":
+                    formatted_lines.append("## COST OF GOODS SOLD")
+                elif group == "Expenses":
+                    formatted_lines.append("## EXPENSES")
+                elif group == "GrossProfit":
+                    formatted_lines.append("## GROSS PROFIT")
+                elif group == "NetOperatingIncome":
+                    formatted_lines.append("## NET OPERATING INCOME")
+                elif group == "NetIncome":
+                    formatted_lines.append("## NET INCOME")
+
+                # Add details if this is a section with rows
+                if "Rows" in row and "Row" in row["Rows"]:
+                    for detail in row["Rows"]["Row"]:
+                        if detail.get("type") == "Data" and "ColData" in detail:
+                            name = detail["ColData"][0].get("value", "Unknown")
+                            amount = detail["ColData"][1].get("value", "0.00")
+                            formatted_lines.append(f"{name}: {amount}")
+
+                # Add summary line
+                if summary and "ColData" in summary:
+                    label = summary["ColData"][0].get("value", "Total")
+                    value = summary["ColData"][1].get("value", "0.00")
+                    formatted_lines.append(f"{label}: {value}")
+
+                # Add spacing between sections
+                formatted_lines.append("")
+
+        return "\n".join(formatted_lines)
+
+    async def analyze_balance_sheet(self, balance_sheet_data: Dict) -> Dict:
+        """
+        Analyze balance sheet with GPT-4
+
+        Parameters:
+        - balance_sheet_data: Dictionary containing the Balance Sheet data from QuickBooks
+
+        Returns:
+        - Dictionary containing the analysis
+        """
+        try:
+            # Format the data for the prompt
+            bs_summary = self._format_bs_for_analysis(balance_sheet_data)
+
+            # Create prompt for GPT-4
+            prompt = f"""
+            As a financial analyst, review the following Balance Sheet and provide insights:
+            
+            # Balance Sheet
+            {bs_summary}
+            
+            Please provide:
+            1. A concise summary of the financial position (2-3 sentences)
+            2. 5 key insights about the balance sheet, focusing on assets, liabilities, and equity
+            3. 3 actionable recommendations based on this Balance Sheet
+            
+            Format your response as JSON with the following structure:
+            {{
+                "summary": "Overall financial summary in 2-3 sentences",
+                "insights": [
+                    "Insight 1",
+                    "Insight 2",
+                    "Insight 3",
+                    "Insight 4",
+                    "Insight 5"
+                ],
+                "recommendations": [
+                    "Recommendation 1",
+                    "Recommendation 2",
+                    "Recommendation 3"
+                ]
+            }}
+            """
+
+            # Call OpenAI API
+            response = self.client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a financial analysis AI specialized in providing insights from financial statements.",
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=0.2,
+                max_tokens=1000,
+            )
+
+            # Extract and parse response
+            response_content = response.choices[0].message.content
+
+            try:
+                analysis = json.loads(response_content)
+                return analysis
+            except json.JSONDecodeError:
+                return {
+                    "error": "Could not parse GPT response as JSON",
+                    "raw_response": response_content,
+                }
+
+        except Exception as e:
+            return {"error": f"Analysis failed: {str(e)}"}
+
+    def _format_bs_for_analysis(self, balance_sheet_data: Dict) -> str:
+        """Format Balance Sheet data for GPT analysis"""
+        # Extract relevant information
+        formatted_lines = []
+
+        # Header information
+        header = balance_sheet_data.get("Header", {})
+        formatted_lines.append(f"As of date: {header.get('EndPeriod', 'N/A')}")
+        formatted_lines.append(f"Basis: {header.get('ReportBasis', 'N/A')}")
+        formatted_lines.append("")
+
+        # Process rows
+        rows = balance_sheet_data.get("Rows", {}).get("Row", [])
+
+        # Extract key sections
+        for row in rows:
+            group = row.get("group", "")
+            summary = row.get("Summary", {})
+
+            if group in ["Assets", "Liabilities", "Equity"]:
+                # Add section header
+                if group == "Assets":
+                    formatted_lines.append("## ASSETS")
+                elif group == "Liabilities":
+                    formatted_lines.append("## LIABILITIES")
+                elif group == "Equity":
+                    formatted_lines.append("## EQUITY")
+
+                # Add details if this is a section with rows
+                if "Rows" in row and "Row" in row["Rows"]:
+                    for detail in row["Rows"]["Row"]:
+                        if detail.get("type") == "Data" and "ColData" in detail:
+                            name = detail["ColData"][0].get("value", "Unknown")
+                            amount = detail["ColData"][1].get("value", "0.00")
+                            formatted_lines.append(f"{name}: {amount}")
+
+                # Add summary line
+                if summary and "ColData" in summary:
+                    label = summary["ColData"][0].get("value", "Total")
+                    value = summary["ColData"][1].get("value", "0.00")
+                    formatted_lines.append(f"{label}: {value}")
+
+                # Add spacing between sections
+                formatted_lines.append("")
+
+        return "\n".join(formatted_lines)
+
+    async def analyze_cash_flow(self, cash_flow_data: Dict) -> Dict:
+        """
+        Analyze cash flow statement with GPT-4
+
+        Parameters:
+        - cash_flow_data: Dictionary containing the Cash Flow data from QuickBooks
+
+        Returns:
+        - Dictionary containing the analysis
+        """
+        try:
+            # Format the data for the prompt
+            cf_summary = self._format_cf_for_analysis(cash_flow_data)
+
+            # Create prompt for GPT-4
+            prompt = f"""
+            As a financial analyst, review the following Cash Flow statement and provide insights:
+            
+            # Cash Flow Statement
+            {cf_summary}
+            
+            Please provide:
+            1. A concise summary of the cash position (2-3 sentences)
+            2. 5 key insights about the cash flow, focusing on operating, investing, and financing activities
+            3. 3 actionable recommendations to improve cash flow
+            
+            Format your response as JSON with the following structure:
+            {{
+                "summary": "Overall cash flow summary in 2-3 sentences",
+                "insights": [
+                    "Insight 1",
+                    "Insight 2",
+                    "Insight 3",
+                    "Insight 4",
+                    "Insight 5"
+                ],
+                "recommendations": [
+                    "Recommendation 1",
+                    "Recommendation 2",
+                    "Recommendation 3"
+                ]
+            }}
+            """
+
+            # Call OpenAI API
+            response = self.client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a financial analysis AI specialized in providing insights from financial statements.",
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=0.2,
+                max_tokens=1000,
+            )
+
+            # Extract and parse response
+            response_content = response.choices[0].message.content
+
+            try:
+                analysis = json.loads(response_content)
+                return analysis
+            except json.JSONDecodeError:
+                return {
+                    "error": "Could not parse GPT response as JSON",
+                    "raw_response": response_content,
+                }
+
+        except Exception as e:
+            return {"error": f"Analysis failed: {str(e)}"}
+
+    def _format_cf_for_analysis(self, cash_flow_data: Dict) -> str:
+        """Format Cash Flow data for GPT analysis"""
+        # Extract relevant information
+        formatted_lines = []
+
+        # Header information
+        header = cash_flow_data.get("Header", {})
+        formatted_lines.append(
+            f"Period: {header.get('StartPeriod', 'N/A')} to {header.get('EndPeriod', 'N/A')}"
+        )
+        formatted_lines.append(f"Basis: {header.get('ReportBasis', 'N/A')}")
+        formatted_lines.append("")
+
+        # Process rows
+        rows = cash_flow_data.get("Rows", {}).get("Row", [])
+
+        # Extract key sections
+        for row in rows:
+            group = row.get("group", "")
+            summary = row.get("Summary", {})
+
+            if group in ["Operating", "Investing", "Financing", "Cash"]:
+                # Add section header
+                if group == "Operating":
+                    formatted_lines.append("## OPERATING ACTIVITIES")
+                elif group == "Investing":
+                    formatted_lines.append("## INVESTING ACTIVITIES")
+                elif group == "Financing":
+                    formatted_lines.append("## FINANCING ACTIVITIES")
+                elif group == "Cash":
+                    formatted_lines.append("## CASH SUMMARY")
+
+                # Add details if this is a section with rows
+                if "Rows" in row and "Row" in row["Rows"]:
+                    for detail in row["Rows"]["Row"]:
+                        if detail.get("type") == "Data" and "ColData" in detail:
+                            name = detail["ColData"][0].get("value", "Unknown")
+                            amount = detail["ColData"][1].get("value", "0.00")
+                            formatted_lines.append(f"{name}: {amount}")
+
+                # Add summary line
+                if summary and "ColData" in summary:
+                    label = summary["ColData"][0].get("value", "Total")
+                    value = summary["ColData"][1].get("value", "0.00")
+                    formatted_lines.append(f"{label}: {value}")
+
+                # Add spacing between sections
+                formatted_lines.append("")
+
+        return "\n".join(formatted_lines)

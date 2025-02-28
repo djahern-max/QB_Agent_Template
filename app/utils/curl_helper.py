@@ -5,7 +5,7 @@ import json
 
 
 def generate_curl_commands(
-    app: FastAPI, base_url: str = "https://agent1.ryze.ai"
+    app: FastAPI, base_url: str = "https://clarity.ryze.ai"
 ) -> Dict[str, List[str]]:
     """
     Generate curl commands for all routes in the application
@@ -63,7 +63,7 @@ def generate_curl_commands(
             if method == "GET":
                 if "callback" in path and "{" not in path:
                     command += "?code=EXAMPLE_CODE&realmId=EXAMPLE_REALM_ID"
-                elif "get_accounts" in path or path == "/agent1.ryze.ai":
+                elif "get_accounts" in path or path == "/clarity.ryze.ai":
                     command += "?realm_id=EXAMPLE_REALM_ID"
 
             # Categorize the commands
@@ -112,7 +112,7 @@ if __name__ == "__main__":
     from app.main import app
 
     # Change this to your actual base URL
-    base_url = "https://agent1.ryze.ai"
+    base_url = "https://clarity.ryze.ai"
 
     curl_commands = generate_curl_commands(app, base_url)
     print_curl_commands(curl_commands)

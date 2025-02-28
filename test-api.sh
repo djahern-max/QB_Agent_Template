@@ -8,7 +8,7 @@ export ACCESS_TOKEN="eyJlbmMiOiJBMTI4Q0JDLUhTMjU2IiwiYWxnIjoiZGlyIn0..HyIRiuRWhk
 
 # Test profit and loss endpoint
 echo "Testing Profit & Loss endpoint..."
-curl -X GET "https://agent1.ryze.ai/api/financial/statements/profit-loss?realm_id=$TEST_REALM_ID" \
+curl -X GET "https://clarity.ryze.ai/api/financial/statements/profit-loss?realm_id=$TEST_REALM_ID" \
   -H "accept: application/json" \
   -H "Authorization: Bearer $ACCESS_TOKEN"
 
@@ -16,7 +16,7 @@ echo -e "\n\n"
 
 # Test balance sheet endpoint
 echo "Testing Balance Sheet endpoint..."
-curl -X GET "https://agent1.ryze.ai/api/financial/statements/balance-sheet?realm_id=$TEST_REALM_ID" \
+curl -X GET "https://clarity.ryze.ai/api/financial/statements/balance-sheet?realm_id=$TEST_REALM_ID" \
   -H "accept: application/json" \
   -H "Authorization: Bearer $ACCESS_TOKEN"
 
@@ -24,7 +24,7 @@ echo -e "\n\n"
 
 # Test cash flow endpoint
 echo "Testing Cash Flow endpoint..."
-curl -X GET "https://agent1.ryze.ai/api/financial/statements/cash-flow?realm_id=$TEST_REALM_ID" \
+curl -X GET "https://clarity.ryze.ai/api/financial/statements/cash-flow?realm_id=$TEST_REALM_ID" \
   -H "accept: application/json" \
   -H "Authorization: Bearer $ACCESS_TOKEN"
 
@@ -32,6 +32,6 @@ echo -e "\n\n"
 
 # Test trends endpoint
 echo "Testing Trends endpoint..."
-curl -X GET "https://agent1.ryze.ai/api/financial/statements/trends/$TEST_REALM_ID" \
+curl -X GET "https://clarity.ryze.ai/api/financial/statements/trends/$TEST_REALM_ID" \
   -H "accept: application/json" \
   -H "Authorization: Bearer $ACCESS_TOKEN"

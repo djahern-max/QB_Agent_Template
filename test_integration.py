@@ -7,7 +7,7 @@ from datetime import datetime
 import time
 
 # Base URL - change as needed
-BASE_URL = "https://agent1.ryze.ai"
+BASE_URL = "https://clarity.ryze.ai"
 
 
 def log_response(description, response):
@@ -69,7 +69,7 @@ def get_accounts(realm_id):
         print("❌ Cannot fetch accounts without realm_id")
         return None
 
-    url = f"{BASE_URL}/agent1.ryze.ai?realm_id={realm_id}"
+    url = f"{BASE_URL}/clarity.ryze.ai?realm_id={realm_id}"
     response = requests.get(url)
     log_response("Chart of Accounts", response)
 

@@ -1,6 +1,7 @@
 # app/agents/financial_agent/agent.py
 import os
 import json
+import re
 from typing import Dict, Any
 from openai import OpenAI
 from fastapi import Depends
@@ -648,3 +649,137 @@ class FinancialAnalysisAgent:
                 formatted_lines.append("")
 
         return "\n".join(formatted_lines)
+
+    def extract_json_from_text(self, text):
+        """
+        Attempts to extract and parse JSON from a text response that might
+        contain additional text or markdown formatting.
+        """
+        # First try direct parsing
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError:
+            pass
+
+        # Try to find JSON within the text using regex
+        json_pattern = r'```json\s*([\s\S]*?)\s*```|{\s*"[^"]+"\s*:[\s\S]*}'
+        matches = re.findall(json_pattern, text)
+
+        for match in matches:
+            # Remove any markdown formatting
+            potential_json = match.strip().replace("```json", "").replace("```", "")
+            try:
+                return json.loads(potential_json)
+            except json.JSONDecodeError:
+                continue
+
+        # If we can't extract clean JSON, create a structured response from the text
+        return {
+            "summary": "Analysis completed but response format was non-standard.",
+            "insights": [
+                text.strip()[:500] + "..." if len(text) > 500 else text.strip()
+            ],
+            "recommendations": ["Please retry the analysis or contact support."],
+        }
+
+    # Then modify the analyze_profit_loss method
+    async def analyze_profit_loss(self, profit_loss_data: Dict) -> Dict:
+        """
+        Analyze profit & loss statement with GPT-4
+
+        Parameters:
+        - profit_loss_data: Dictionary containing the P&L data from QuickBooks
+
+        Returns:
+        - Dictionary containing the analysis
+        """
+        try:
+            # Format the data for the prompt
+            pl_summary = self._format_pl_for_analysis(profit_loss_data)
+
+            # Create prompt for GPT-4
+            prompt = f"""
+            As a financial analyst, review the following Profit & Loss statement and provide insights:
+            
+            # Profit & Loss Statement
+            {pl_summary}
+            
+            Please provide:
+            1. A concise summary of the financial position (2-3 sentences)
+            2. 5 key insights about the data, focusing on revenue, expenses, and profitability
+            3. 3 actionable recommendations based on this P&L statement
+            
+            Format your response as JSON with the following structure:
+            {{
+                "summary": "Overall financial summary in 2-3 sentences",
+                "insights": [
+                    "Insight 1",
+                    "Insight 2",
+                    "Insight 3",
+                    "Insight 4",
+                    "Insight 5"
+                ],
+                "recommendations": [
+                    "Recommendation 1",
+                    "Recommendation 2",
+                    "Recommendation 3"
+                ]
+            }}
+
+            IMPORTANT: Response must be valid JSON that can be parsed. Do not include any explanatory text outside the JSON structure.
+            """
+
+            # Call OpenAI API
+            response = self.client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a financial analysis AI specialized in providing insights from financial statements. Always reply with valid JSON.",
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=0.2,
+                max_tokens=1000,
+                response_format={"type": "json_object"},  # Ensure JSON response format
+            )
+
+            # Extract response
+            response_content = response.choices[0].message.content
+
+            try:
+                # Try to parse as JSON first
+                analysis = json.loads(response_content)
+                return analysis
+            except json.JSONDecodeError:
+                # Use our helper function to extract JSON
+                # Use our helper function to extract JSON
+                analysis = self.extract_json_from_text(
+                    response_content
+                )  # CORRECT - with 'self'
+
+                # If we still couldn't parse JSON, create a fallback
+                if not analysis:
+                    return {
+                        "error": "Could not parse GPT response as JSON",
+                        "summary": "Analysis completed, but results need manual review.",
+                        "insights": [
+                            "Raw analysis needs to be reviewed by a human analyst."
+                        ],
+                        "recommendations": [
+                            "Try again with a different report format."
+                        ],
+                        "raw_response": response_content[
+                            :1000
+                        ],  # Limiting to first 1000 chars
+                    }
+
+                return analysis
+
+        except Exception as e:
+            return {
+                "error": f"Analysis failed: {str(e)}",
+                "summary": "An error occurred during analysis.",
+                "insights": [],
+                "recommendations": ["Please try again later."],
+            }

@@ -14,6 +14,7 @@ from ..models import QuickBooksTokens
 from ..services.quickbooks import QuickBooksService
 from typing import Dict, Any
 from ..agents.financial_agent.agent import FinancialAnalysisAgent
+import json
 
 
 logger = logging.getLogger(__name__)
@@ -282,6 +283,19 @@ async def analyze_financial_data(
     if report_type not in ["profit-loss", "balance-sheet", "cash-flow"]:
         raise HTTPException(status_code=400, detail="Invalid report type")
 
+    # Debug logging
+    print(
+        f"Received data for analysis: {json.dumps(data)[:200]}..."
+    )  # Print first 200 chars
+    print(f"Data structure keys: {list(data.keys())}")
+
+    # Process nested data structure if present
+    if "data" in data:
+        # If your frontend is sending a nested "data" object
+        actual_data = data["data"]
+    else:
+        actual_data = data
+
     try:
         # Create the financial analysis agent
         agent = FinancialAnalysisAgent(db)
@@ -291,11 +305,11 @@ async def analyze_financial_data(
 
         # Format the prompt based on report type
         if report_type == "profit-loss":
-            analysis = await agent.analyze_profit_loss(data)
+            analysis = await agent.analyze_profit_loss(actual_data)
         elif report_type == "balance-sheet":
-            analysis = await agent.analyze_balance_sheet(data)
+            analysis = await agent.analyze_balance_sheet(actual_data)
         elif report_type == "cash-flow":
-            analysis = await agent.analyze_cash_flow(data)
+            analysis = await agent.analyze_cash_flow(actual_data)
 
         # Log the analysis result
         logger.debug(f"Analysis result: {analysis}")
@@ -336,57 +350,3 @@ async def analyze_financial_data(
                 ],
             },
         )
-
-
-def get_fallback_analysis(report_type: str) -> Dict[str, Any]:
-    """Get fallback analysis data for each report type"""
-    fallback_data = {
-        "profit-loss": {
-            "summary": "Your business is showing strong profitability with a net income of $831,532.35 for the period.",
-            "insights": [
-                "AI Processing Services and Automated Defense Systems are your top revenue generators.",
-                "Total revenue of $941,798.19 with only $22,494.03 in cost of goods sold indicates an extremely high gross margin of 97.6%.",
-                "Server Farm Utilities represent your largest expense category at $44,817.35.",
-                "There were no travel expenses recorded during this period.",
-                "Your net profit margin is approximately 88.3%, which is exceptionally high compared to industry averages.",
-            ],
-            "recommendations": [
-                "Consider diversifying revenue streams as Automated Defense Systems account for over 22% of total revenue.",
-                "Analyze the efficiency of your Computing Power Acquisition spending to ensure optimal resource utilization.",
-                "Evaluate opportunities to reduce Server Farm Utilities costs through energy-efficient technologies.",
-            ],
-        },
-        "cash-flow": {
-            "summary": "Your cash flow position appears stable with positive operating cash flow.",
-            "insights": [
-                "Operating activities generated significant positive cash flow.",
-                "Investing activities show strategic allocation of resources.",
-                "No significant financing activities were recorded this period.",
-                "Cash reserves are sufficient for current operations.",
-                "Working capital management appears efficient.",
-            ],
-            "recommendations": [
-                "Consider investment opportunities for excess cash reserves.",
-                "Implement cash flow forecasting to anticipate future needs.",
-                "Review payment terms with suppliers and customers to optimize cash cycle.",
-            ],
-        },
-        "balance-sheet": {
-            "summary": "Your balance sheet shows a strong equity position with manageable liabilities.",
-            "insights": [
-                "Assets are well-diversified across different categories.",
-                "Current ratio indicates strong short-term liquidity.",
-                "Debt-to-equity ratio is favorable compared to industry averages.",
-                "Fixed assets represent a significant portion of total assets.",
-                "Cash position is robust for operational needs.",
-            ],
-            "recommendations": [
-                "Consider implementing an asset management strategy for optimal utilization.",
-                "Review inventory management practices to minimize holding costs.",
-                "Evaluate opportunities for strategic debt restructuring.",
-            ],
-        },
-    }
-
-    # Return the requested report type or default to profit-loss
-    return fallback_data.get(report_type, fallback_data["profit-loss"])

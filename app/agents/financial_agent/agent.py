@@ -719,3 +719,162 @@ class FinancialAnalysisAgent:
                 "insights": [],
                 "recommendations": ["Please try again later."],
             }
+
+    async def analyze_balance_sheet(self, balance_sheet_data: Dict) -> Dict:
+        """
+        Analyze balance sheet with GPT-4
+
+        Parameters:
+        - balance_sheet_data: Dictionary containing the Balance Sheet data from QuickBooks
+
+        Returns:
+        - Dictionary containing the analysis
+        """
+        try:
+            # Format the data for the prompt
+            bs_summary = self._format_bs_for_analysis(balance_sheet_data)
+
+            # Create prompt for GPT-4
+            prompt = f"""
+            As a financial analyst, review the following Balance Sheet and provide insights:
+            
+            # Balance Sheet
+            {bs_summary}
+            
+            Please provide:
+            1. A concise summary of the financial position (2-3 sentences)
+            2. 5 key insights about the balance sheet, focusing on assets, liabilities, and equity
+            3. 3 actionable recommendations based on this Balance Sheet
+            
+            Format your response as JSON with the following structure:
+            {{
+                "summary": "Overall financial summary in 2-3 sentences",
+                "insights": [
+                    "Insight 1",
+                    "Insight 2",
+                    "Insight 3",
+                    "Insight 4",
+                    "Insight 5"
+                ],
+                "recommendations": [
+                    "Recommendation 1",
+                    "Recommendation 2",
+                    "Recommendation 3"
+                ]
+            }}
+
+            IMPORTANT: Response must be valid JSON that can be parsed. Do not include any explanatory text outside the JSON structure.
+            """
+
+            # Call OpenAI API
+            response = self.client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a financial analysis AI specialized in providing insights from financial statements. Always reply with valid JSON.",
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=0.2,
+                max_tokens=1000,
+                # Remove response_format parameter to avoid 400 error
+            )
+
+            # Extract and parse response
+            response_content = response.choices[0].message.content
+
+            try:
+                # Try to parse as JSON first
+                analysis = json.loads(response_content)
+                return analysis
+            except json.JSONDecodeError:
+                # Use our helper function to extract JSON
+                analysis = self.extract_json_from_text(response_content)
+
+                # If we still couldn't parse JSON, create a fallback
+                if not analysis:
+                    return {
+                        "error": "Could not parse GPT response as JSON",
+                        "summary": "Analysis completed, but results need manual review.",
+                        "insights": [
+                            "Raw analysis needs to be reviewed by a human analyst."
+                        ],
+                        "recommendations": [
+                            "Try again with a different report format."
+                        ],
+                        "raw_response": response_content[
+                            :1000
+                        ],  # Limiting to first 1000 chars
+                    }
+
+                return analysis
+
+        except Exception as e:
+            return {
+                "error": f"Analysis failed: {str(e)}",
+                "summary": "An error occurred during analysis.",
+                "insights": [],
+                "recommendations": ["Please try again later."],
+            }
+
+    def _format_bs_for_analysis(self, balance_sheet_data: Dict) -> str:
+        """Format Balance Sheet data for GPT analysis"""
+        # Extract relevant information
+        formatted_lines = []
+
+        try:
+            # Header information
+            header = balance_sheet_data.get("Header", {})
+            formatted_lines.append(f"As of date: {header.get('EndPeriod', 'N/A')}")
+            formatted_lines.append(f"Basis: {header.get('ReportBasis', 'N/A')}")
+            formatted_lines.append("")
+
+            # Process rows
+            rows = balance_sheet_data.get("Rows", {}).get("Row", [])
+
+            if not rows:
+                formatted_lines.append(
+                    "## NOTE: This balance sheet appears to be empty or contains insufficient data."
+                )
+                return "\n".join(formatted_lines)
+
+            # Extract key sections
+            for row in rows:
+                group = row.get("group", "")
+                summary = row.get("Summary", {})
+
+                if group in ["Assets", "Liabilities", "Equity"]:
+                    # Add section header
+                    if group == "Assets":
+                        formatted_lines.append("## ASSETS")
+                    elif group == "Liabilities":
+                        formatted_lines.append("## LIABILITIES")
+                    elif group == "Equity":
+                        formatted_lines.append("## EQUITY")
+
+                    # Add details if this is a section with rows
+                    if "Rows" in row and "Row" in row["Rows"]:
+                        for detail in row["Rows"]["Row"]:
+                            if detail.get("type") == "Data" and "ColData" in detail:
+                                name = detail["ColData"][0].get("value", "Unknown")
+                                amount = detail["ColData"][1].get("value", "0.00")
+                                formatted_lines.append(f"{name}: {amount}")
+
+                    # Add summary line
+                    if summary and "ColData" in summary:
+                        label = summary["ColData"][0].get("value", "Total")
+                        value = summary["ColData"][1].get("value", "0.00")
+                        formatted_lines.append(f"{label}: {value}")
+
+                    # Add spacing between sections
+                    formatted_lines.append("")
+        except Exception as e:
+            formatted_lines.append(
+                f"## ERROR: Failed to format balance sheet: {str(e)}"
+            )
+            formatted_lines.append(
+                "The balance sheet data may be incomplete or in an unexpected format."
+            )
+
+        return "\n".join(formatted_lines)

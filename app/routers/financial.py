@@ -275,6 +275,9 @@ async def get_financial_trends(
 # app/routers/financial.py - Update the analyze_financial_data function
 
 
+# Update this in app/routers/financial.py
+
+
 @router.post("/analyze/{report_type}")
 async def analyze_financial_data(
     report_type: str, data: Dict[str, Any], db: Session = Depends(get_db)
@@ -283,70 +286,128 @@ async def analyze_financial_data(
     if report_type not in ["profit-loss", "balance-sheet", "cash-flow"]:
         raise HTTPException(status_code=400, detail="Invalid report type")
 
-    # Debug logging
-    print(
-        f"Received data for analysis: {json.dumps(data)[:200]}..."
-    )  # Print first 200 chars
-    print(f"Data structure keys: {list(data.keys())}")
-
-    # Process nested data structure if present
-    if "data" in data:
-        # If your frontend is sending a nested "data" object
-        actual_data = data["data"]
-    else:
-        actual_data = data
-
     try:
         # Create the financial analysis agent
         agent = FinancialAnalysisAgent(db)
 
         # Log the data being sent for analysis
-        logger.debug(f"Analyzing {report_type} data")
+        logger.debug(f"Analyzing {report_type} data: {data.keys()}")
 
-        # Format the prompt based on report type
-        if report_type == "profit-loss":
-            analysis = await agent.analyze_profit_loss(actual_data)
-        elif report_type == "balance-sheet":
-            analysis = await agent.analyze_balance_sheet(actual_data)
-        elif report_type == "cash-flow":
-            analysis = await agent.analyze_cash_flow(actual_data)
-
-        # Log the analysis result
-        logger.debug(f"Analysis result: {analysis}")
-
-        # Check if the analysis contains an error
-        if "error" in analysis:
-            logger.error(f"Analysis error: {analysis['error']}")
+        # Validate the data structure
+        if "data" not in data:
+            logger.warning(f"Invalid request format: 'data' field is missing")
             return JSONResponse(
-                status_code=500,
+                status_code=400,
                 content={
-                    "error": analysis["error"],
-                    "summary": analysis.get("summary", "Analysis failed."),
-                    "insights": analysis.get("insights", []),
-                    "recommendations": analysis.get("recommendations", []),
+                    "error": "Invalid request format: 'data' field is missing",
+                    "summary": "The request did not contain the expected data structure.",
+                    "insights": [
+                        "Please check the API documentation for the correct request format."
+                    ],
+                    "recommendations": [
+                        "Ensure the API request includes the financial data in the expected format."
+                    ],
                 },
             )
 
-        # If the response doesn't have the expected structure, add default values
-        if "summary" not in analysis:
-            analysis["summary"] = "Analysis completed successfully."
-        if "insights" not in analysis:
-            analysis["insights"] = []
-        if "recommendations" not in analysis:
-            analysis["recommendations"] = []
+        # Use data.get('data') which handles the case when 'data' might be None
+        financial_data = data.get("data", {})
 
-        return analysis
+        if not financial_data or not isinstance(financial_data, dict):
+            logger.warning(f"Empty or invalid financial data received")
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "error": "Empty or invalid financial data",
+                    "summary": "No financial data was provided for analysis.",
+                    "insights": [
+                        "The provided data appears to be empty or in an invalid format."
+                    ],
+                    "recommendations": [
+                        "Please provide valid financial data for analysis."
+                    ],
+                },
+            )
+
+        # Format the prompt based on report type
+        logger.debug(f"Calling analysis for {report_type}")
+
+        try:
+            if report_type == "profit-loss":
+                analysis = await agent.analyze_profit_loss(financial_data)
+            elif report_type == "balance-sheet":
+                analysis = await agent.analyze_balance_sheet(financial_data)
+            elif report_type == "cash-flow":
+                analysis = await agent.analyze_cash_flow(financial_data)
+            else:
+                # This should never happen due to the earlier check, but just in case
+                return JSONResponse(
+                    status_code=400,
+                    content={
+                        "error": f"Unsupported report type: {report_type}",
+                        "summary": "The requested analysis type is not supported.",
+                        "insights": [],
+                        "recommendations": [
+                            "Please use one of the supported report types: profit-loss, balance-sheet, or cash-flow."
+                        ],
+                    },
+                )
+
+            # Log the analysis result
+            logger.debug(f"Analysis result: {analysis}")
+
+            # Check if the analysis contains an error
+            if "error" in analysis:
+                logger.error(f"Analysis error: {analysis['error']}")
+                return JSONResponse(
+                    status_code=200,  # Return 200 even for analysis errors to maintain consistent client behavior
+                    content={
+                        "error": analysis["error"],
+                        "summary": analysis.get(
+                            "summary", "Analysis encountered an error."
+                        ),
+                        "insights": analysis.get("insights", []),
+                        "recommendations": analysis.get("recommendations", []),
+                    },
+                )
+
+            # If the response doesn't have the expected structure, add default values
+            if "summary" not in analysis:
+                analysis["summary"] = "Analysis completed successfully."
+            if "insights" not in analysis:
+                analysis["insights"] = []
+            if "recommendations" not in analysis:
+                analysis["recommendations"] = []
+
+            return analysis
+
+        except Exception as inner_error:
+            logger.exception(f"Error in analysis method: {str(inner_error)}")
+            return JSONResponse(
+                status_code=200,  # Return 200 to maintain frontend compatibility
+                content={
+                    "error": f"Analysis method error: {str(inner_error)}",
+                    "summary": "An error occurred while analyzing the financial data.",
+                    "insights": [
+                        "The analysis process encountered an unexpected error."
+                    ],
+                    "recommendations": [
+                        "Please try again later or contact support if the issue persists."
+                    ],
+                },
+            )
+
     except Exception as e:
-        logger.error(f"Error analyzing financial data: {str(e)}")
+        logger.exception(f"Unhandled exception in analyze_financial_data: {str(e)}")
         # Return a structured error response
         return JSONResponse(
-            status_code=500,
+            status_code=200,  # Return 200 so the frontend can handle it gracefully
             content={
                 "error": f"Analysis failed: {str(e)}",
                 "summary": "Analysis could not be completed due to an error.",
-                "insights": ["The analysis failed due to a technical issue."],
+                "insights": ["The analysis service encountered an unexpected issue."],
                 "recommendations": [
-                    "Please try again or contact support if the issue persists."
+                    "Please try again later or contact support if the issue persists."
                 ],
             },
         )

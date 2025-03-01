@@ -95,39 +95,6 @@ async def get_profit_loss(
 @router.get("/statements/balance-sheet")
 async def get_balance_sheet(
     realm_id: str = Query(...),  # Make this required
-    as_of_date: str = None,
-    qb_service: QuickBooksService = Depends(get_quickbooks_service),
-):
-    try:
-        # Log the incoming parameters
-        logger.debug(f"Balance sheet request - as_of_date: {as_of_date}")
-
-        # If no date provided, use current date
-        as_of = as_of_date or datetime.now().strftime("%Y-%m-%d")
-
-        # Explicitly log what we're sending to QuickBooks
-        logger.debug(f"Requesting balance sheet with as_of: {as_of}")
-
-        # Make sure we're using the correct parameter name for QuickBooks API
-        return await qb_service.get_report(
-            realm_id=realm_id,
-            report_type="BalanceSheet",
-            params={
-                "as_of": as_of,
-                "date_macro": "custom",  # Force custom date instead of using a macro
-                "minorversion": "65",  # Specify the API version
-            },
-        )
-    except Exception as e:
-        logger.error(f"Error fetching balance sheet: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Error fetching balance sheet: {str(e)}"
-        )
-
-
-@router.get("/statements/balance-sheet")
-async def get_balance_sheet(
-    realm_id: str = Query(...),  # Make this required
     start_date: str = None,
     end_date: str = None,
     qb_service: QuickBooksService = Depends(get_quickbooks_service),
@@ -456,6 +423,29 @@ async def analyze_financial_data(
                     "Please try again later or contact support if the issue persists."
                 ],
             },
+        )
+
+
+@router.get("/statements/cash-flow")
+async def get_cash_flow(
+    realm_id: str = Query(...),  # Make this required
+    start_date: str = None,
+    end_date: str = None,
+    qb_service: QuickBooksService = Depends(get_quickbooks_service),
+):
+    try:
+        return await qb_service.get_report(
+            realm_id=realm_id,
+            report_type="CashFlow",
+            params={
+                "start_date": start_date
+                or datetime.now().replace(day=1).strftime("%Y-%m-%d"),
+                "end_date": end_date or datetime.now().strftime("%Y-%m-%d"),
+            },
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error fetching cash flow: {str(e)}"
         )
 
 

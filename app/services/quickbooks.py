@@ -137,6 +137,11 @@ class QuickBooksService:
         Get a report from the QuickBooks Online API.
         """
         try:
+            # Debug log to see what parameters are being received
+            logger.debug(
+                f"get_report called - report_type: {report_type}, params: {params}"
+            )
+
             # Get access token from database or refresh if needed
             auth_token = await self._get_access_token(realm_id)
 

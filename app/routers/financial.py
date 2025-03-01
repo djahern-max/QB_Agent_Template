@@ -99,6 +99,12 @@ async def get_balance_sheet(
     qb_service: QuickBooksService = Depends(get_quickbooks_service),
 ):
     try:
+        # Debug log to see what parameters are being received
+        logger.debug(
+            f"Balance sheet request - realm_id: {realm_id}, as_of_date: {as_of_date}"
+        )
+
+        # Make sure to map as_of_date to as_of in the params dictionary
         return await qb_service.get_report(
             realm_id=realm_id,
             report_type="BalanceSheet",
@@ -107,6 +113,7 @@ async def get_balance_sheet(
             },
         )
     except Exception as e:
+        logger.error(f"Error fetching balance sheet: {str(e)}")
         raise HTTPException(
             status_code=500, detail=f"Error fetching balance sheet: {str(e)}"
         )

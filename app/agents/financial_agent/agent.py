@@ -456,14 +456,26 @@ class FinancialAnalysisAgent:
     async def analyze_cash_flow(self, cash_flow_data: Dict) -> Dict:
         """
         Analyze cash flow statement with GPT-4
-
-        Parameters:
-        - cash_flow_data: Dictionary containing the Cash Flow data from QuickBooks
-
-        Returns:
-        - Dictionary containing the analysis
         """
         try:
+            # First validate the data structure
+            if not cash_flow_data or not isinstance(cash_flow_data, dict):
+                return {
+                    "error": "Invalid data format",
+                    "summary": "The provided data is not in the expected format.",
+                    "insights": [],
+                    "recommendations": [],
+                }
+
+            # Verify required fields
+            if "Header" not in cash_flow_data or "Rows" not in cash_flow_data:
+                return {
+                    "error": "Missing required data fields",
+                    "summary": "The cash flow data is missing required fields.",
+                    "insights": [],
+                    "recommendations": [],
+                }
+
             # Format the data for the prompt
             cf_summary = self._format_cf_for_analysis(cash_flow_data)
 
@@ -495,6 +507,8 @@ class FinancialAnalysisAgent:
                     "Recommendation 3"
                 ]
             }}
+
+            IMPORTANT: Response must be valid JSON that can be parsed. Do not include any explanatory text outside the JSON structure.
             """
 
             # Call OpenAI API
@@ -503,7 +517,7 @@ class FinancialAnalysisAgent:
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are a financial analysis AI specialized in providing insights from financial statements.",
+                        "content": "You are a financial analysis AI specialized in providing insights from financial statements. Always reply with valid JSON.",
                     },
                     {"role": "user", "content": prompt},
                 ],
@@ -513,69 +527,129 @@ class FinancialAnalysisAgent:
 
             # Extract and parse response
             response_content = response.choices[0].message.content
+            print(f"Cash Flow GPT response: {response_content[:200]}...")
 
             try:
+                # Try to parse as JSON first
                 analysis = json.loads(response_content)
                 return analysis
             except json.JSONDecodeError:
-                return {
-                    "error": "Could not parse GPT response as JSON",
-                    "raw_response": response_content,
-                }
+                # Use our helper function to extract JSON
+                analysis = self.extract_json_from_text(response_content)
+
+                # If we still couldn't parse JSON, create a fallback
+                if not analysis:
+                    return {
+                        "error": "Could not parse GPT response as JSON",
+                        "summary": "Analysis completed, but results need manual review.",
+                        "insights": [
+                            "Raw analysis needs to be reviewed by a human analyst."
+                        ],
+                        "recommendations": [
+                            "Try again with a different report format."
+                        ],
+                    }
+
+                return analysis
 
         except Exception as e:
-            return {"error": f"Analysis failed: {str(e)}"}
+            import traceback
+
+            print(f"Cash Flow analysis error: {str(e)}")
+            print(traceback.format_exc())
+            return {
+                "error": f"Analysis failed: {str(e)}",
+                "summary": "An error occurred during analysis.",
+                "insights": [],
+                "recommendations": ["Please try again later."],
+            }
 
     def _format_cf_for_analysis(self, cash_flow_data: Dict) -> str:
         """Format Cash Flow data for GPT analysis"""
-        # Extract relevant information
         formatted_lines = []
 
-        # Header information
-        header = cash_flow_data.get("Header", {})
-        formatted_lines.append(
-            f"Period: {header.get('StartPeriod', 'N/A')} to {header.get('EndPeriod', 'N/A')}"
-        )
-        formatted_lines.append(f"Basis: {header.get('ReportBasis', 'N/A')}")
-        formatted_lines.append("")
+        try:
+            # Header information
+            header = cash_flow_data.get("Header", {})
+            formatted_lines.append(
+                f"Period: {header.get('StartPeriod', 'N/A')} to {header.get('EndPeriod', 'N/A')}"
+            )
+            formatted_lines.append("")
 
-        # Process rows
-        rows = cash_flow_data.get("Rows", {}).get("Row", [])
+            # Process rows - general approach
+            rows = cash_flow_data.get("Rows", {}).get("Row", [])
 
-        # Extract key sections
-        for row in rows:
-            group = row.get("group", "")
-            summary = row.get("Summary", {})
+            if not rows:
+                formatted_lines.append(
+                    "## NOTE: This cash flow statement appears to be empty or contains insufficient data."
+                )
+                return "\n".join(formatted_lines)
 
-            if group in ["Operating", "Investing", "Financing", "Cash"]:
-                # Add section header
-                if group == "Operating":
+            # Process each section in the cash flow statement
+            for row in rows:
+                header_data = row.get("Header", {}).get("ColData", [])
+                section_name = header_data[0].get("value", "") if header_data else ""
+
+                if "OPERATING ACTIVITIES" in section_name:
                     formatted_lines.append("## OPERATING ACTIVITIES")
-                elif group == "Investing":
+                    self._process_cf_section(row, formatted_lines)
+                elif "INVESTING ACTIVITIES" in section_name:
                     formatted_lines.append("## INVESTING ACTIVITIES")
-                elif group == "Financing":
+                    self._process_cf_section(row, formatted_lines)
+                elif "FINANCING ACTIVITIES" in section_name:
                     formatted_lines.append("## FINANCING ACTIVITIES")
-                elif group == "Cash":
-                    formatted_lines.append("## CASH SUMMARY")
+                    self._process_cf_section(row, formatted_lines)
 
-                # Add details if this is a section with rows
-                if "Rows" in row and "Row" in row["Rows"]:
-                    for detail in row["Rows"]["Row"]:
-                        if detail.get("type") == "Data" and "ColData" in detail:
-                            name = detail["ColData"][0].get("value", "Unknown")
-                            amount = detail["ColData"][1].get("value", "0.00")
-                            formatted_lines.append(f"{name}: {amount}")
-
-                # Add summary line
+                # Look for cash increase/decrease and beginning/ending cash
+                summary = row.get("Summary", {})
                 if summary and "ColData" in summary:
-                    label = summary["ColData"][0].get("value", "Total")
-                    value = summary["ColData"][1].get("value", "0.00")
-                    formatted_lines.append(f"{label}: {value}")
+                    col_data = summary.get("ColData", [])
+                    if len(col_data) >= 2:
+                        label = col_data[0].get("value", "")
+                        value = col_data[1].get("value", "")
+                        if "Net cash increase" in label or "Cash at" in label:
+                            formatted_lines.append(f"## {label}")
+                            formatted_lines.append(f"${value}")
+                            formatted_lines.append("")
 
-                # Add spacing between sections
-                formatted_lines.append("")
+        except Exception as e:
+            formatted_lines.append(
+                f"## ERROR: Failed to format cash flow statement: {str(e)}"
+            )
+            formatted_lines.append(
+                "The cash flow data may be incomplete or in an unexpected format."
+            )
+
+        # If we have too little data, add a note
+        if len(formatted_lines) < 5:
+            formatted_lines.append(
+                "## NOTE: Limited cash flow data available for analysis."
+            )
 
         return "\n".join(formatted_lines)
+
+    def _process_cf_section(self, section, formatted_lines):
+        """Process a cash flow section (Operating, Investing, Financing)"""
+        # Process items in the section
+        if "Rows" in section and "Row" in section.get("Rows", {}):
+            for item in section.get("Rows", {}).get("Row", []):
+                if "ColData" in item:
+                    col_data = item.get("ColData", [])
+                    if len(col_data) >= 2:
+                        name = col_data[0].get("value", "Unknown")
+                        amount = col_data[1].get("value", "0.00")
+                        formatted_lines.append(f"- {name}: ${amount}")
+
+        # Add section summary if available
+        summary = section.get("Summary", {})
+        if summary and "ColData" in summary:
+            col_data = summary.get("ColData", [])
+            if len(col_data) >= 2:
+                label = col_data[0].get("value", "Total")
+                value = col_data[1].get("value", "0.00")
+                formatted_lines.append(f"**{label}**: ${value}")
+
+        formatted_lines.append("")
 
     def extract_json_from_text(self, text):
         """
@@ -723,18 +797,30 @@ class FinancialAnalysisAgent:
     async def analyze_balance_sheet(self, balance_sheet_data: Dict) -> Dict:
         """
         Analyze balance sheet with GPT-4
-
-        Parameters:
-        - balance_sheet_data: Dictionary containing the Balance Sheet data from QuickBooks
-
-        Returns:
-        - Dictionary containing the analysis
         """
         try:
+            # First validate the data structure
+            if not balance_sheet_data or not isinstance(balance_sheet_data, dict):
+                return {
+                    "error": "Invalid data format",
+                    "summary": "The provided data is not in the expected format.",
+                    "insights": [],
+                    "recommendations": [],
+                }
+
+            # Verify required fields
+            if "Header" not in balance_sheet_data or "Rows" not in balance_sheet_data:
+                return {
+                    "error": "Missing required data fields",
+                    "summary": "The balance sheet data is missing required fields.",
+                    "insights": [],
+                    "recommendations": [],
+                }
+
             # Format the data for the prompt
             bs_summary = self._format_bs_for_analysis(balance_sheet_data)
 
-            # Create prompt for GPT-4
+            # Create prompt for GPT-4 (keep your existing prompt)
             prompt = f"""
             As a financial analyst, review the following Balance Sheet and provide insights:
             
@@ -778,11 +864,11 @@ class FinancialAnalysisAgent:
                 ],
                 temperature=0.2,
                 max_tokens=1000,
-                # Remove response_format parameter to avoid 400 error
             )
 
             # Extract and parse response
             response_content = response.choices[0].message.content
+            print(f"Balance Sheet GPT response: {response_content[:200]}...")
 
             try:
                 # Try to parse as JSON first
@@ -803,14 +889,15 @@ class FinancialAnalysisAgent:
                         "recommendations": [
                             "Try again with a different report format."
                         ],
-                        "raw_response": response_content[
-                            :1000
-                        ],  # Limiting to first 1000 chars
                     }
 
                 return analysis
 
         except Exception as e:
+            import traceback
+
+            print(f"Balance Sheet analysis error: {str(e)}")
+            print(traceback.format_exc())
             return {
                 "error": f"Analysis failed: {str(e)}",
                 "summary": "An error occurred during analysis.",
@@ -820,7 +907,6 @@ class FinancialAnalysisAgent:
 
     def _format_bs_for_analysis(self, balance_sheet_data: Dict) -> str:
         """Format Balance Sheet data for GPT analysis"""
-        # Extract relevant information
         formatted_lines = []
 
         try:
@@ -830,7 +916,7 @@ class FinancialAnalysisAgent:
             formatted_lines.append(f"Basis: {header.get('ReportBasis', 'N/A')}")
             formatted_lines.append("")
 
-            # Process rows
+            # Process rows - general approach
             rows = balance_sheet_data.get("Rows", {}).get("Row", [])
 
             if not rows:
@@ -839,36 +925,18 @@ class FinancialAnalysisAgent:
                 )
                 return "\n".join(formatted_lines)
 
-            # Extract key sections
+            # First pass: look for ASSETS and LIABILITIES AND EQUITY sections
             for row in rows:
-                group = row.get("group", "")
-                summary = row.get("Summary", {})
+                header_data = row.get("Header", {}).get("ColData", [])
+                section_name = header_data[0].get("value", "") if header_data else ""
 
-                if group in ["Assets", "Liabilities", "Equity"]:
-                    # Add section header
-                    if group == "Assets":
-                        formatted_lines.append("## ASSETS")
-                    elif group == "Liabilities":
-                        formatted_lines.append("## LIABILITIES")
-                    elif group == "Equity":
-                        formatted_lines.append("## EQUITY")
+                if section_name == "ASSETS":
+                    formatted_lines.append("## ASSETS")
+                    self._process_bs_section(row, formatted_lines)
+                elif section_name == "LIABILITIES AND EQUITY":
+                    formatted_lines.append("## LIABILITIES AND EQUITY")
+                    self._process_bs_section(row, formatted_lines)
 
-                    # Add details if this is a section with rows
-                    if "Rows" in row and "Row" in row["Rows"]:
-                        for detail in row["Rows"]["Row"]:
-                            if detail.get("type") == "Data" and "ColData" in detail:
-                                name = detail["ColData"][0].get("value", "Unknown")
-                                amount = detail["ColData"][1].get("value", "0.00")
-                                formatted_lines.append(f"{name}: {amount}")
-
-                    # Add summary line
-                    if summary and "ColData" in summary:
-                        label = summary["ColData"][0].get("value", "Total")
-                        value = summary["ColData"][1].get("value", "0.00")
-                        formatted_lines.append(f"{label}: {value}")
-
-                    # Add spacing between sections
-                    formatted_lines.append("")
         except Exception as e:
             formatted_lines.append(
                 f"## ERROR: Failed to format balance sheet: {str(e)}"
@@ -877,4 +945,53 @@ class FinancialAnalysisAgent:
                 "The balance sheet data may be incomplete or in an unexpected format."
             )
 
+        # If we have too little data, add a note
+        if len(formatted_lines) < 5:
+            formatted_lines.append(
+                "## NOTE: Limited balance sheet data available for analysis."
+            )
+
         return "\n".join(formatted_lines)
+
+    def _process_bs_section(self, section, formatted_lines):
+        """Process a balance sheet section (ASSETS or LIABILITIES AND EQUITY)"""
+        # Process subsections if they exist
+        if "Rows" in section and "Row" in section.get("Rows", {}):
+            for subsection in section.get("Rows", {}).get("Row", []):
+                header_data = subsection.get("Header", {}).get("ColData", [])
+                subsection_name = header_data[0].get("value", "") if header_data else ""
+
+                if subsection_name:
+                    formatted_lines.append(f"### {subsection_name}")
+
+                # Process items in the subsection
+                if "Rows" in subsection and "Row" in subsection.get("Rows", {}):
+                    for item in subsection.get("Rows", {}).get("Row", []):
+                        if "ColData" in item:
+                            col_data = item.get("ColData", [])
+                            if len(col_data) >= 2:
+                                name = col_data[0].get("value", "Unknown")
+                                amount = col_data[1].get("value", "0.00")
+                                formatted_lines.append(f"- {name}: ${amount}")
+
+                # Add subsection summary if available
+                summary = subsection.get("Summary", {})
+                if summary and "ColData" in summary:
+                    col_data = summary.get("ColData", [])
+                    if len(col_data) >= 2:
+                        label = col_data[0].get("value", "Total")
+                        value = col_data[1].get("value", "0.00")
+                        formatted_lines.append(f"**{label}**: ${value}")
+
+                formatted_lines.append("")
+
+        # Add section summary if available
+        summary = section.get("Summary", {})
+        if summary and "ColData" in summary:
+            col_data = summary.get("ColData", [])
+            if len(col_data) >= 2:
+                label = col_data[0].get("value", "Total")
+                value = col_data[1].get("value", "0.00")
+                formatted_lines.append(f"**{label}**: ${value}")
+
+        formatted_lines.append("")

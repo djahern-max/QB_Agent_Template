@@ -94,7 +94,7 @@ async def get_profit_loss(
 
 @router.get("/statements/balance-sheet")
 async def get_balance_sheet(
-    realm_id: str = Query(...),  # Make this required
+    realm_id: str = Query(...),  # Make this required as well
     start_date: str = None,
     end_date: str = None,
     qb_service: QuickBooksService = Depends(get_quickbooks_service),

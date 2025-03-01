@@ -19,6 +19,7 @@ import os
 import logging
 import traceback
 import aiohttp
+from datetime import datetime
 
 
 logger = logging.getLogger(__name__)
@@ -70,12 +71,21 @@ async def get_accounts(qb_service: QuickBooksService = Depends(get_quickbooks_se
 # Add financial statement endpoints
 @router.get("/statements/profit-loss")
 async def get_profit_loss(
+    realm_id: str = Query(...),  # Make this required
     start_date: str = None,
     end_date: str = None,
     qb_service: QuickBooksService = Depends(get_quickbooks_service),
 ):
     try:
-        return await qb_service.get_profit_loss_statement(start_date, end_date)
+        return await qb_service.get_report(
+            realm_id=realm_id,
+            report_type="ProfitAndLoss",
+            params={
+                "start_date": start_date
+                or datetime.now().replace(day=1).strftime("%Y-%m-%d"),
+                "end_date": end_date or datetime.now().strftime("%Y-%m-%d"),
+            },
+        )
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Error fetching profit/loss: {str(e)}"

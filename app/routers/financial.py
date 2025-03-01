@@ -94,22 +94,27 @@ async def get_profit_loss(
 
 @router.get("/statements/balance-sheet")
 async def get_balance_sheet(
-    realm_id: str = Query(...),
-    start_date: str = None,
-    end_date: str = None,
+    realm_id: str = Query(...),  # This is required
+    start_date: str = None,  # Keep for API compatibility
+    end_date: str = None,  # We'll use this as as_of date
     qb_service: QuickBooksService = Depends(get_quickbooks_service),
 ):
     try:
-        # Use end_date as the "as_of" date parameter
+        # Important: Use the "as_of" parameter instead of "start_date"/"end_date"
+        print(f"Fetching balance sheet with as_of={end_date}")
+
         return await qb_service.get_report(
             realm_id=realm_id,
             report_type="BalanceSheet",
             params={
+                # Use end_date as the as_of parameter
                 "as_of": end_date or datetime.now().strftime("%Y-%m-%d"),
                 "minorversion": "75",
             },
         )
     except Exception as e:
+        print(f"Balance sheet error: {str(e)}")
+        print(traceback.format_exc())
         raise HTTPException(
             status_code=500, detail=f"Error fetching balance sheet: {str(e)}"
         )

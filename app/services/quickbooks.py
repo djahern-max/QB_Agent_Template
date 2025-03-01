@@ -340,20 +340,74 @@ class QuickBooksService:
             },
         )
 
-    async def get_balance_sheet(self, as_of_date=None):
-        """Get balance sheet from QuickBooks"""
-        # Use today's date if not provided
-        if not as_of_date:
-            as_of_date = datetime.now().strftime("%Y-%m-%d")
-        # Get the realm ID from your active connection
-        realm_id = self._get_active_realm_id()
+    # Updated get_balance_sheet method for app/services/quickbooks.py
+
+    async def get_balance_sheet(self, realm_id: str = None, params: dict = None):
+        """
+        Get balance sheet from QuickBooks with enhanced date range support.
+
+        Args:
+            realm_id: The QuickBooks realm ID (company ID)
+            params: Dictionary with the following possible keys:
+                - date_range: One of "this_month", "last_month", "this_quarter", "this_year", "last_year"
+                - start_date: Specific start date in YYYY-MM-DD format (used for custom range)
+                - end_date: Specific end date in YYYY-MM-DD format (used for custom range)
+                - accounting_method: "Accrual" or "Cash" (defaults to "Accrual")
+
+        Returns:
+            Dict containing the QuickBooks balance sheet report data
+        """
+        # Default params if none provided
+        if params is None:
+            params = {}
+
+        # If no realm_id is provided, get it from the active connection
+        if not realm_id:
+            realm_id = self._get_active_realm_id()
+
+        # Set up the request parameters
+        request_params = {
+            "accounting_method": params.get("accounting_method", "Accrual"),
+            "minorversion": "75",
+        }
+
+        # Handle date range selection
+        date_range = params.get("date_range")
+
+        if date_range:
+            # Map UI date range options to QuickBooks date_macro values
+            date_macro_mapping = {
+                "this_month": "this month",
+                "last_month": "last month",
+                "this_quarter": "this quarter",
+                "this_year": "this fiscal year-to-date",
+                "last_year": "last fiscal year",
+            }
+
+            if date_range in date_macro_mapping:
+                request_params["date_macro"] = date_macro_mapping[date_range]
+            else:
+                # If an invalid date_range is provided, log a warning and use default
+                logger.warning(
+                    f"Invalid date_range '{date_range}', using current date instead"
+                )
+
+        # If explicit start_date and end_date are provided, they override date_range
+        start_date = params.get("start_date")
+        end_date = params.get("end_date")
+
+        if start_date and end_date:
+            # Remove date_macro if it exists to prevent conflict
+            request_params.pop("date_macro", None)
+            request_params["start_date"] = start_date
+            request_params["end_date"] = end_date
+
+        # Log the final request parameters
+        logger.info(f"Getting balance sheet with params: {request_params}")
+
         # Call the report API
         return await self.get_report(
-            realm_id=realm_id,
-            report_type="BalanceSheet",
-            params={
-                "as_of": as_of_date,  # This uses the correct "as_of" parameter
-            },
+            realm_id=realm_id, report_type="BalanceSheet", params=request_params
         )
 
     async def get_cash_flow_statement(self, start_date=None, end_date=None):

@@ -95,53 +95,54 @@ async def get_profit_loss(
 @router.get("/statements/balance-sheet")
 async def get_balance_sheet(
     realm_id: str = Query(...),
-    as_of_date: str = Query(
-        None, description="Balance sheet as of this date (YYYY-MM-DD)"
+    date_range: Optional[str] = Query(
+        None,
+        description="Predefined date range (this_month, last_month, this_quarter, this_year, last_year)",
+    ),
+    start_date: Optional[str] = Query(
+        None, description="Start date for custom range (YYYY-MM-DD)"
+    ),
+    end_date: Optional[str] = Query(
+        None, description="End date for custom range (YYYY-MM-DD)"
+    ),
+    accounting_method: Optional[str] = Query(
+        "Accrual", description="Accounting method (Accrual or Cash)"
     ),
     qb_service: QuickBooksService = Depends(get_quickbooks_service),
 ):
+    """
+    Get a balance sheet report with support for various date range options.
+
+    - Use date_range for predefined periods (this_month, last_month, etc.)
+    - Use start_date and end_date for custom date ranges
+    - Date range parameters take precedence over start_date/end_date if both are provided
+    """
     try:
-        # Use specific date if provided, otherwise use current date
-        target_date = as_of_date or datetime.now().strftime("%Y-%m-%d")
-
-        # Log what we're requesting
-        logger.info(
-            f"Getting balance sheet for realm_id={realm_id}, as_of={target_date}"
-        )
-
-        # Use start_date and end_date which appears to work better than as_of
+        # Build parameters dictionary
         params = {
-            "start_date": target_date,
-            "end_date": target_date,
-            "accounting_method": "Accrual",
-            "minorversion": "75",
+            "accounting_method": accounting_method,
         }
 
-        # Make sure we're removing any existing date_macro parameter
-        params.pop("date_macro", None)
+        # Add date range if specified
+        if date_range:
+            params["date_range"] = date_range
 
-        result = await qb_service.get_report(
-            realm_id=realm_id, report_type="BalanceSheet", params=params
-        )
+        # Add start and end dates if specified (these will override date_range in the service)
+        if start_date and end_date:
+            params["start_date"] = start_date
+            params["end_date"] = end_date
 
-        # Check if the result has dates different than what we requested
-        # and log a warning if they don't match
-        if result and "Header" in result:
-            header = result["Header"]
-            if "StartPeriod" in header and "EndPeriod" in header:
-                if (
-                    header["StartPeriod"] != target_date
-                    or header["EndPeriod"] != target_date
-                ):
-                    logger.warning(
-                        f"Requested balance sheet for {target_date} but got date range "
-                        f"from {header['StartPeriod']} to {header['EndPeriod']}"
-                    )
+        # Log what we're requesting
+        logger.info(f"Balance sheet request - realm_id: {realm_id}, params: {params}")
+
+        # Call the enhanced balance sheet method
+        result = await qb_service.get_balance_sheet(realm_id=realm_id, params=params)
 
         return result
 
     except Exception as e:
         logger.error(f"Balance sheet error: {str(e)}")
+        logger.error(traceback.format_exc())
         raise HTTPException(
             status_code=500, detail=f"Error fetching balance sheet: {str(e)}"
         )

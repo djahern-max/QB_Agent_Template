@@ -15,6 +15,7 @@ from ..services.quickbooks import QuickBooksService
 from typing import Dict, Any
 from ..agents.financial_agent.agent import FinancialAnalysisAgent
 import json
+import os
 
 
 logger = logging.getLogger(__name__)
@@ -426,5 +427,43 @@ async def check_current_connection(db: Session = Depends(get_db)):
             return {"connected": True, "realmId": token_record.realm_id}
         else:
             return {"connected": False, "realmId": None}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/company-name/{realm_id}")
+async def get_company_name(
+    realm_id: str, qb_service: QuickBooksService = Depends(get_quickbooks_service)
+):
+    """Get just the company name for a QuickBooks connection"""
+    try:
+        # Get access token for this realm
+        auth_token = await qb_service._get_access_token(realm_id)
+
+        # Use production URL
+        base_url = "https://quickbooks.api.intuit.com"
+        url = f"{base_url}/v3/company/{realm_id}/companyinfo/{realm_id}"
+
+        # Prepare headers
+        headers = {
+            "Authorization": f"Bearer {auth_token}",
+            "Accept": "application/json",
+        }
+
+        # Make the API request
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, headers=headers) as response:
+                if response.status == 200:
+                    company_data = await response.json()
+                    company_name = company_data.get("CompanyInfo", {}).get(
+                        "CompanyName", "Your Company"
+                    )
+                    return {"company_name": company_name}
+                else:
+                    error_text = await response.text()
+                    raise HTTPException(
+                        status_code=response.status,
+                        detail=f"Error fetching company name: {error_text}",
+                    )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

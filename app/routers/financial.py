@@ -125,8 +125,8 @@ async def get_balance_sheet(
         )
 
 
-@router.get("/statements/cash-flow")
-async def get_cash_flow(
+@router.get("/statements/balance-sheet")
+async def get_balance_sheet(
     realm_id: str = Query(...),  # Make this required
     start_date: str = None,
     end_date: str = None,
@@ -135,7 +135,7 @@ async def get_cash_flow(
     try:
         return await qb_service.get_report(
             realm_id=realm_id,
-            report_type="CashFlow",
+            report_type="BalanceSheet",
             params={
                 "start_date": start_date
                 or datetime.now().replace(day=1).strftime("%Y-%m-%d"),
@@ -144,7 +144,7 @@ async def get_cash_flow(
         )
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f"Error fetching cash flow: {str(e)}"
+            status_code=500, detail=f"Error fetching balance sheet: {str(e)}"
         )
 
 

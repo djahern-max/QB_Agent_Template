@@ -171,6 +171,19 @@ class QuickBooksService:
             if params is None:
                 params = {}
 
+            # Filter out None values
+            params = {k: v for k, v in params.items() if v is not None}
+
+            # For Balance Sheet reports, we need special parameter handling
+            if report_type == "BalanceSheet" and "as_of" in params:
+                # If we're getting a balance sheet, make sure we're not sending conflicting parameters
+                # Remove date_macro if it exists to prevent it from overriding our as_of date
+                params.pop("date_macro", None)
+
+                # Add additional parameters to force a specific date report
+                params["report_date"] = params["as_of"]
+                params["accounting_method"] = params.get("accounting_method", "Accrual")
+
             # Add minorversion parameter if not present
             if "minorversion" not in params:
                 params["minorversion"] = "75"  # Use the latest minor version

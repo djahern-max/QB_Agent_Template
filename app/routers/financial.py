@@ -95,25 +95,34 @@ async def get_profit_loss(
 @router.get("/statements/balance-sheet")
 async def get_balance_sheet(
     realm_id: str = Query(...),
-    start_date: str = None,
-    end_date: str = None,
+    as_of_date: str = Query(
+        None, description="Balance sheet as of this date (YYYY-MM-DD)"
+    ),
     qb_service: QuickBooksService = Depends(get_quickbooks_service),
 ):
     try:
-        # Use the proper as_of parameter
+        # Use today's date if not provided
+        target_date = as_of_date or datetime.now().strftime("%Y-%m-%d")
+
+        # Log what we're about to request
+        logger.debug(
+            f"Getting balance sheet for realm_id={realm_id}, as_of={target_date}"
+        )
+
+        # Make the API request with specific parameters for balance sheet
         return await qb_service.get_report(
             realm_id=realm_id,
             report_type="BalanceSheet",
             params={
-                "as_of": end_date or datetime.now().strftime("%Y-%m-%d"),
-                # Add these parameters to control the date range
-                "date_macro": "custom",  # This overrides their default of "this calendar year-to-date"
-                "start_date": start_date,  # This forces your specified start date
-                "end_date": end_date,  # This forces your specified end date
+                "as_of": target_date,
+                "date_macro": None,  # Setting to None to override any default
+                "accounting_method": "Accrual",
+                "columns": "singlecolumn",  # Request a single column report
                 "minorversion": "75",
             },
         )
     except Exception as e:
+        logger.error(f"Balance sheet error: {str(e)}")
         raise HTTPException(
             status_code=500, detail=f"Error fetching balance sheet: {str(e)}"
         )

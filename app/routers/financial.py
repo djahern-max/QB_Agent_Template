@@ -16,6 +16,12 @@ from typing import Dict, Any
 from ..agents.financial_agent.agent import FinancialAnalysisAgent
 import json
 import os
+import logging
+import traceback
+import aiohttp
+
+
+logger = logging.getLogger(__name__)
 
 
 logger = logging.getLogger(__name__)
@@ -436,16 +442,19 @@ async def get_company_name(
     realm_id: str, qb_service: QuickBooksService = Depends(get_quickbooks_service)
 ):
     """Get the company name for a QuickBooks connection"""
+    logger.info(f"Company name requested for realm_id: {realm_id}")
+
     try:
-        # Get access token for this realm
+        # Explicitly log that we're retrieving the token
+        logger.info("Attempting to get access token...")
         auth_token = await qb_service._get_access_token(realm_id)
+        logger.info(f"Token retrieved successfully, length: {len(auth_token)}")
 
         # Use production URL
         base_url = "https://quickbooks.api.intuit.com"
-        url = f"{base_url}/v3/company/{realm_id}/companyinfo/{realm_id}"
+        url = f"{base_url}/v3/company/{realm_id}/companyinfo/{realm_id}?minorversion=65"
 
-        # Log the request for debugging
-        logger.debug(f"Requesting company info from {url}")
+        logger.info(f"Making API request to: {url}")
 
         # Prepare headers
         headers = {
@@ -456,34 +465,49 @@ async def get_company_name(
         # Make the API request
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=headers) as response:
-                logger.debug(f"QuickBooks API response status: {response.status}")
+                status = response.status
+                logger.info(f"QuickBooks API response status: {status}")
 
-                if response.status == 200:
+                if status == 200:
+                    resp_text = await response.text()
+                    logger.info(
+                        f"Response body: {resp_text[:100]}..."
+                    )  # Log the first 100 chars
+
                     company_data = await response.json()
-                    logger.debug(f"Company data response: {company_data.keys()}")
+                    logger.info(f"Company data keys: {list(company_data.keys())}")
 
                     # Extract company name from the response
-                    company_name = company_data.get("CompanyInfo", {}).get(
-                        "CompanyName", ""
+                    company_info = company_data.get("CompanyInfo", {})
+                    logger.info(
+                        f"CompanyInfo keys: {list(company_info.keys()) if company_info else 'None'}"
                     )
+
+                    company_name = company_info.get("CompanyName", "")
 
                     if not company_name:
                         logger.warning("Company name not found in QuickBooks response")
-                        company_name = "Unknown Company"
+                        return {
+                            "company_name": "Company Name Not Found",
+                            "error": "Name field missing in response",
+                        }
 
                     logger.info(f"Retrieved company name: {company_name}")
                     return {"company_name": company_name}
                 else:
                     error_text = await response.text()
                     logger.error(
-                        f"Error fetching company info: HTTP {response.status} - {error_text}"
+                        f"Error fetching company info: HTTP {status} - {error_text}"
                     )
-                    raise HTTPException(
-                        status_code=response.status,
-                        detail=f"Error fetching company info: {error_text}",
-                    )
+                    return {
+                        "company_name": "Error Retrieving Company Name",
+                        "error": f"HTTP {status}: {error_text[:100]}...",
+                    }
     except Exception as e:
-        logger.exception(f"Exception in get_company_name: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Error retrieving company name: {str(e)}"
-        )
+        error_detail = traceback.format_exc()
+        logger.error(f"Exception in get_company_name: {str(e)}\n{error_detail}")
+        return {
+            "company_name": "Exception Occurred",
+            "error": str(e),
+            "error_type": type(e).__name__,
+        }

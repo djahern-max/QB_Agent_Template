@@ -94,11 +94,18 @@ async def get_profit_loss(
 
 @router.get("/statements/balance-sheet")
 async def get_balance_sheet(
+    realm_id: str = Query(...),  # Make this required
     as_of_date: str = None,
     qb_service: QuickBooksService = Depends(get_quickbooks_service),
 ):
     try:
-        return await qb_service.get_balance_sheet(as_of_date)
+        return await qb_service.get_report(
+            realm_id=realm_id,
+            report_type="BalanceSheet",
+            params={
+                "as_of": as_of_date or datetime.now().strftime("%Y-%m-%d"),
+            },
+        )
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Error fetching balance sheet: {str(e)}"
@@ -107,12 +114,21 @@ async def get_balance_sheet(
 
 @router.get("/statements/cash-flow")
 async def get_cash_flow(
+    realm_id: str = Query(...),  # Make this required
     start_date: str = None,
     end_date: str = None,
     qb_service: QuickBooksService = Depends(get_quickbooks_service),
 ):
     try:
-        return await qb_service.get_cash_flow_statement(start_date, end_date)
+        return await qb_service.get_report(
+            realm_id=realm_id,
+            report_type="CashFlow",
+            params={
+                "start_date": start_date
+                or datetime.now().replace(day=1).strftime("%Y-%m-%d"),
+                "end_date": end_date or datetime.now().strftime("%Y-%m-%d"),
+            },
+        )
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Error fetching cash flow: {str(e)}"

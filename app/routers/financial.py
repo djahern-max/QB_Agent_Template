@@ -99,17 +99,23 @@ async def get_balance_sheet(
     qb_service: QuickBooksService = Depends(get_quickbooks_service),
 ):
     try:
-        # Debug log to see what parameters are being received
-        logger.debug(
-            f"Balance sheet request - realm_id: {realm_id}, as_of_date: {as_of_date}"
-        )
+        # Log the incoming parameters
+        logger.debug(f"Balance sheet request - as_of_date: {as_of_date}")
 
-        # Make sure to map as_of_date to as_of in the params dictionary
+        # If no date provided, use current date
+        as_of = as_of_date or datetime.now().strftime("%Y-%m-%d")
+
+        # Explicitly log what we're sending to QuickBooks
+        logger.debug(f"Requesting balance sheet with as_of: {as_of}")
+
+        # Make sure we're using the correct parameter name for QuickBooks API
         return await qb_service.get_report(
             realm_id=realm_id,
             report_type="BalanceSheet",
             params={
-                "as_of": as_of_date or datetime.now().strftime("%Y-%m-%d"),
+                "as_of": as_of,
+                "date_macro": "custom",  # Force custom date instead of using a macro
+                "minorversion": "65",  # Specify the API version
             },
         )
     except Exception as e:

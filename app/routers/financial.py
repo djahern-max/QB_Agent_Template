@@ -94,22 +94,26 @@ async def get_profit_loss(
 
 @router.get("/statements/balance-sheet")
 async def get_balance_sheet(
-    realm_id: str = Query(...),  # Make this required as well
-    start_date: str = None,
-    end_date: str = None,
+    realm_id: str = Query(...),
+    as_of_date: str = None,  # Changed from start_date/end_date to as_of_date
     qb_service: QuickBooksService = Depends(get_quickbooks_service),
 ):
     try:
+        # Log the request parameters
+        logger.debug(
+            f"Balance Sheet request: realm_id={realm_id}, as_of_date={as_of_date}"
+        )
+
         return await qb_service.get_report(
             realm_id=realm_id,
             report_type="BalanceSheet",
             params={
-                "start_date": start_date
-                or datetime.now().replace(day=1).strftime("%Y-%m-%d"),
-                "end_date": end_date or datetime.now().strftime("%Y-%m-%d"),
+                "as_of": as_of_date or datetime.now().strftime("%Y-%m-%d"),
+                "minorversion": "75",
             },
         )
     except Exception as e:
+        logger.error(f"Error fetching balance sheet: {str(e)}")
         raise HTTPException(
             status_code=500, detail=f"Error fetching balance sheet: {str(e)}"
         )
@@ -428,25 +432,51 @@ async def analyze_financial_data(
 
 @router.get("/statements/cash-flow")
 async def get_cash_flow(
-    realm_id: str = Query(...),  # Make this required
+    realm_id: str = Query(...),
     start_date: str = None,
     end_date: str = None,
     qb_service: QuickBooksService = Depends(get_quickbooks_service),
 ):
     try:
+        # Log the request parameters
+        logger.debug(
+            f"Cash Flow request: realm_id={realm_id}, start_date={start_date}, end_date={end_date}"
+        )
+
+        # Try "StatementOfCashFlows" instead of "CashFlow"
         return await qb_service.get_report(
             realm_id=realm_id,
-            report_type="CashFlow",
+            report_type="StatementOfCashFlows",  # Changed from "CashFlow"
             params={
                 "start_date": start_date
                 or datetime.now().replace(day=1).strftime("%Y-%m-%d"),
                 "end_date": end_date or datetime.now().strftime("%Y-%m-%d"),
+                "minorversion": "75",
             },
         )
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Error fetching cash flow: {str(e)}"
+        logger.error(
+            f"Error fetching cash flow: {str(e)}, traceback: {traceback.format_exc()}"
         )
+
+        # If the first attempt fails, try with the original "CashFlow" name
+        try:
+            return await qb_service.get_report(
+                realm_id=realm_id,
+                report_type="CashFlow",
+                params={
+                    "start_date": start_date
+                    or datetime.now().replace(day=1).strftime("%Y-%m-%d"),
+                    "end_date": end_date or datetime.now().strftime("%Y-%m-%d"),
+                    "minorversion": "75",
+                },
+            )
+        except Exception as inner_e:
+            logger.error(f"Error with fallback CashFlow: {str(inner_e)}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Error fetching cash flow: {str(e)} -> {str(inner_e)}",
+            )
 
 
 @router.get("/connection-status")

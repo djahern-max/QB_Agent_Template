@@ -6,6 +6,8 @@ import logging
 import aiohttp
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
+import json
+import traceback
 
 # Import existing models and utilities as needed
 from ..models import QuickBooksTokens
@@ -171,10 +173,11 @@ class QuickBooksService:
 
             # Add minorversion parameter if not present
             if "minorversion" not in params:
-                params["minorversion"] = "65"  # Use the latest minor version
+                params["minorversion"] = "75"  # Use the latest minor version
 
-            # Log the request details for debugging
-            logger.debug(f"Making report request to {url} with params {params}")
+            # Log the request details for debugging (full URL with params)
+            param_str = "&".join([f"{k}={v}" for k, v in params.items()])
+            logger.debug(f"Making report request to {url}?{param_str}")
 
             # Make API request
             async with aiohttp.ClientSession() as session:
@@ -183,19 +186,24 @@ class QuickBooksService:
                     logger.debug(f"Report response status: {response.status}")
                     logger.debug(f"Report response headers: {response.headers}")
 
+                    # Read response body for both success and error cases
+                    response_text = await response.text()
+                    logger.debug(f"Response first 500 chars: {response_text[:500]}")
+
                     if response.status == 200:
-                        return await response.json()
+                        return json.loads(response_text)
                     else:
-                        error_text = await response.text()
                         logger.error(
-                            f"Error fetching {report_type} report: {error_text}"
+                            f"Error fetching {report_type} report: Status {response.status}"
                         )
+                        logger.error(f"Error response: {response_text}")
                         raise Exception(
-                            f"Failed to fetch {report_type} report: HTTP {response.status}"
+                            f"Failed to fetch {report_type} report: HTTP {response.status} - {response_text[:200]}"
                         )
 
         except Exception as e:
             logger.error(f"Error getting {report_type} report: {str(e)}")
+            logger.error(f"Traceback: {traceback.format_exc()}")
             raise
 
     # Add helper method to get or refresh tokens if not already present

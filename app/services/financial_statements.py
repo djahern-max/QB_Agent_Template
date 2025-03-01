@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from ..services.quickbooks import QuickbooksService
 from ..models import FinancialAnalysis
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -63,13 +64,18 @@ class FinancialStatementsService:
             Dict containing the formatted Balance Sheet
         """
         try:
+            # Log the parameters
+            logger.debug(
+                f"Getting balance sheet for realm_id={realm_id}, as_of_date={as_of_date}"
+            )
+
             # Call the QBO BalanceSheet report endpoint
             report_data = await self.qb_service.get_report(
                 realm_id=realm_id,
                 report_type="BalanceSheet",
                 params={
-                    "as_of": as_of_date,
-                    "minorversion": "75",  # Use the version from your API call
+                    "as_of": as_of_date,  # Use "as_of" parameter
+                    "minorversion": "75",
                 },
             )
 
@@ -79,41 +85,64 @@ class FinancialStatementsService:
 
         except Exception as e:
             logger.error(f"Error generating Balance Sheet: {str(e)}")
+            logger.error(f"Traceback: {traceback.format_exc()}")
             raise
 
-    async def get_cash_flow_statement(
-        self, realm_id: str, start_date: str, end_date: str
-    ) -> Dict[str, Any]:
-        """
-        Generate a Statement of Cash Flows for the specified period using QBO Report API.
 
-        Args:
-            realm_id: QuickBooks realm ID
-            start_date: Start date in format YYYY-MM-DD
-            end_date: End date in format YYYY-MM-DD
+async def get_cash_flow_statement(
+    self, realm_id: str, start_date: str, end_date: str
+) -> Dict[str, Any]:
+    """
+    Generate a Statement of Cash Flows for the specified period using QBO Report API.
 
-        Returns:
-            Dict containing the formatted Statement of Cash Flows
-        """
+    Args:
+        realm_id: QuickBooks realm ID
+        start_date: Start date in format YYYY-MM-DD
+        end_date: End date in format YYYY-MM-DD
+
+    Returns:
+        Dict containing the formatted Statement of Cash Flows
+    """
+    try:
+        # Log the parameters
+        logger.debug(
+            f"Getting cash flow for realm_id={realm_id}, start_date={start_date}, end_date={end_date}"
+        )
+
+        # Try with "StatementOfCashFlows" first
         try:
-            # Call the QBO CashFlow report endpoint
+            report_data = await self.qb_service.get_report(
+                realm_id=realm_id,
+                report_type="StatementOfCashFlows",
+                params={
+                    "start_date": start_date,
+                    "end_date": end_date,
+                    "minorversion": "75",
+                },
+            )
+        except Exception as e1:
+            logger.warning(
+                f"Error with StatementOfCashFlows, trying CashFlow: {str(e1)}"
+            )
+            # Fall back to "CashFlow" if the first attempt fails
             report_data = await self.qb_service.get_report(
                 realm_id=realm_id,
                 report_type="CashFlow",
                 params={
                     "start_date": start_date,
                     "end_date": end_date,
-                    "minorversion": "75",  # Use the version from your API call
+                    "minorversion": "75",
                 },
             )
 
-            # Process the report response into our standardized format
-            formatted_data = self._format_cash_flow(report_data, start_date, end_date)
-            return formatted_data
+        # Process the report response into our standardized format
+        formatted_data = self._format_cash_flow(report_data, start_date, end_date)
+        return formatted_data
 
-        except Exception as e:
-            logger.error(f"Error generating Cash Flow Statement: {str(e)}")
-            raise
+    except Exception as e:
+        logger.error(f"Error generating Cash Flow Statement: {str(e)}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        raise
 
     def _format_profit_and_loss(
         self, report_data: Dict[str, Any], start_date: str, end_date: str

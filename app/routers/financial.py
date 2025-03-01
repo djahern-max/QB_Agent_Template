@@ -100,20 +100,20 @@ async def get_balance_sheet(
     qb_service: QuickBooksService = Depends(get_quickbooks_service),
 ):
     try:
-        # Log for debugging
-        print(f"Fetching balance sheet with realm_id={realm_id}, as_of={end_date}")
-
-        # The key change is here - use "as_of" parameter instead of "start_date"/"end_date"
+        # Use the proper as_of parameter
         return await qb_service.get_report(
             realm_id=realm_id,
             report_type="BalanceSheet",
             params={
                 "as_of": end_date or datetime.now().strftime("%Y-%m-%d"),
+                # Add these parameters to control the date range
+                "date_macro": "custom",  # This overrides their default of "this calendar year-to-date"
+                "start_date": start_date,  # This forces your specified start date
+                "end_date": end_date,  # This forces your specified end date
                 "minorversion": "75",
             },
         )
     except Exception as e:
-        print(f"Balance sheet error: {str(e)}")
         raise HTTPException(
             status_code=500, detail=f"Error fetching balance sheet: {str(e)}"
         )

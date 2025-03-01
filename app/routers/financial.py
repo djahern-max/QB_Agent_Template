@@ -294,6 +294,8 @@ async def get_financial_trends(
 
 # Update this in app/routers/financial.py
 
+# Update this in app/routers/financial.py
+
 
 @router.post("/analyze/{report_type}")
 async def analyze_financial_data(
@@ -310,30 +312,18 @@ async def analyze_financial_data(
         # Log the data being sent for analysis
         logger.debug(f"Analyzing {report_type} data: {data.keys()}")
 
-        # Validate the data structure
-        if "data" not in data:
-            logger.warning(f"Invalid request format: 'data' field is missing")
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "error": "Invalid request format: 'data' field is missing",
-                    "summary": "The request did not contain the expected data structure.",
-                    "insights": [
-                        "Please check the API documentation for the correct request format."
-                    ],
-                    "recommendations": [
-                        "Ensure the API request includes the financial data in the expected format."
-                    ],
-                },
-            )
+        # Extract the financial data - handle both formats for backward compatibility
+        financial_data = data.get("data", data)
 
-        # Use data.get('data') which handles the case when 'data' might be None
-        financial_data = data.get("data", {})
+        # Additional debugging to check data structure at this point
+        logger.debug(
+            f"Financial data structure keys: {financial_data.keys() if isinstance(financial_data, dict) else 'Not a dict'}"
+        )
 
         if not financial_data or not isinstance(financial_data, dict):
             logger.warning(f"Empty or invalid financial data received")
             return JSONResponse(
-                status_code=400,
+                status_code=200,
                 content={
                     "error": "Empty or invalid financial data",
                     "summary": "No financial data was provided for analysis.",
@@ -350,6 +340,7 @@ async def analyze_financial_data(
         logger.debug(f"Calling analysis for {report_type}")
 
         try:
+            # Map report_type to corresponding method
             if report_type == "profit-loss":
                 analysis = await agent.analyze_profit_loss(financial_data)
             elif report_type == "balance-sheet":
@@ -357,7 +348,7 @@ async def analyze_financial_data(
             elif report_type == "cash-flow":
                 analysis = await agent.analyze_cash_flow(financial_data)
             else:
-                # This should never happen due to the earlier check, but just in case
+                # This should never happen due to the earlier check
                 return JSONResponse(
                     status_code=400,
                     content={
@@ -377,7 +368,7 @@ async def analyze_financial_data(
             if "error" in analysis:
                 logger.error(f"Analysis error: {analysis['error']}")
                 return JSONResponse(
-                    status_code=200,  # Return 200 even for analysis errors to maintain consistent client behavior
+                    status_code=200,
                     content={
                         "error": analysis["error"],
                         "summary": analysis.get(
@@ -401,7 +392,7 @@ async def analyze_financial_data(
         except Exception as inner_error:
             logger.exception(f"Error in analysis method: {str(inner_error)}")
             return JSONResponse(
-                status_code=200,  # Return 200 to maintain frontend compatibility
+                status_code=200,
                 content={
                     "error": f"Analysis method error: {str(inner_error)}",
                     "summary": "An error occurred while analyzing the financial data.",
@@ -418,7 +409,7 @@ async def analyze_financial_data(
         logger.exception(f"Unhandled exception in analyze_financial_data: {str(e)}")
         # Return a structured error response
         return JSONResponse(
-            status_code=200,  # Return 200 so the frontend can handle it gracefully
+            status_code=200,
             content={
                 "error": f"Analysis failed: {str(e)}",
                 "summary": "Analysis could not be completed due to an error.",

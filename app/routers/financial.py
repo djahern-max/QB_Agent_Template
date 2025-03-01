@@ -428,20 +428,3 @@ async def check_current_connection(db: Session = Depends(get_db)):
             return {"connected": False, "realmId": None}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/connection-status")
-async def check_current_connection(db: Session = Depends(get_db)):
-    """Check if any active QuickBooks connection exists"""
-    try:
-        # Get the most recent active token from the database
-        token_record = (
-            db.query(QuickBooksTokens).order_by(QuickBooksTokens.id.desc()).first()
-        )
-
-        if token_record:
-            return {"connected": True, "realmId": token_record.realm_id}
-        else:
-            return {"connected": False, "realmId": None}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))

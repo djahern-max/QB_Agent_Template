@@ -339,7 +339,7 @@ class QuickBooksService:
             realm_id=realm_id,
             report_type="BalanceSheet",
             params={
-                "as_of": as_of_date,
+                "as_of": as_of_date,  # This uses the correct "as_of" parameter
             },
         )
 

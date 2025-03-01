@@ -5,7 +5,7 @@ from typing import Dict, List, Any, Optional
 import logging
 import aiohttp
 from sqlalchemy.orm import Session
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Import existing models and utilities as needed
 from ..models import QuickBooksTokens
@@ -209,9 +209,86 @@ class QuickBooksService:
         if not token_record:
             raise Exception(f"No OAuth tokens found for realm ID {realm_id}")
 
-        # TODO: Check if token is expired and refresh if needed
-        # This depends on your token management implementation
+        # Check if token is expired
+        current_time = datetime.now()
 
+        # If token is expired or about to expire in the next 5 minutes, refresh it
+        if token_record.expires_at <= current_time + timedelta(minutes=5):
+            try:
+                # Get refresh token
+                refresh_token = token_record.refresh_token
+
+                # Get environment variables
+                client_id = os.getenv("QUICKBOOKS_CLIENT_ID")
+                client_secret = os.getenv("QUICKBOOKS_CLIENT_SECRET")
+
+                if not client_id or not client_secret:
+                    raise Exception(
+                        "Missing QuickBooks API credentials in environment variables"
+                    )
+
+                # Set up token refresh request
+                token_endpoint = (
+                    "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
+                )
+                payload = {
+                    "grant_type": "refresh_token",
+                    "refresh_token": refresh_token,
+                }
+
+                headers = {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Accept": "application/json",
+                }
+
+                # Make the token request
+                async with aiohttp.ClientSession() as session:
+                    # Create Basic auth header
+                    auth = aiohttp.BasicAuth(client_id, client_secret)
+
+                    async with session.post(
+                        token_endpoint, data=payload, headers=headers, auth=auth
+                    ) as response:
+                        if response.status == 200:
+                            token_data = await response.json()
+
+                            # Calculate expiry time
+                            expires_in = token_data.get(
+                                "expires_in", 3600
+                            )  # Default to 1 hour if not specified
+                            expiry_time = datetime.now() + timedelta(seconds=expires_in)
+
+                            # Update the token in the database
+                            token_record.access_token = token_data.get("access_token")
+
+                            # The refresh token might be updated too
+                            if "refresh_token" in token_data:
+                                token_record.refresh_token = token_data.get(
+                                    "refresh_token"
+                                )
+
+                            token_record.expires_at = expiry_time
+                            token_record.updated_at = datetime.now()
+
+                            # Commit the changes
+                            self.db.commit()
+
+                            return token_record.access_token
+                        else:
+                            error_text = await response.text()
+                            logger.error(f"Failed to refresh token: {error_text}")
+                            raise Exception(
+                                f"Token refresh failed: HTTP {response.status} - {error_text}"
+                            )
+
+            except Exception as e:
+                logger.error(f"Error refreshing token: {str(e)}")
+                # If refresh fails, we might need to force reauthentication
+                raise Exception(
+                    f"Authentication expired. Please reconnect to QuickBooks: {str(e)}"
+                )
+
+        # Return the token if it's still valid
         return token_record.access_token
 
     async def get_profit_loss_statement(self, start_date=None, end_date=None):

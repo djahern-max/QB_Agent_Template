@@ -442,72 +442,33 @@ async def get_company_name(
     realm_id: str, qb_service: QuickBooksService = Depends(get_quickbooks_service)
 ):
     """Get the company name for a QuickBooks connection"""
-    logger.info(f"Company name requested for realm_id: {realm_id}")
-
     try:
-        # Explicitly log that we're retrieving the token
-        logger.info("Attempting to get access token...")
+        # Get access token
         auth_token = await qb_service._get_access_token(realm_id)
-        logger.info(f"Token retrieved successfully, length: {len(auth_token)}")
 
-        # Use production URL
-        base_url = "https://quickbooks.api.intuit.com"
-        url = f"{base_url}/v3/company/{realm_id}/companyinfo/{realm_id}?minorversion=65"
+        # Set API URL
+        url = f"https://quickbooks.api.intuit.com/v3/company/{realm_id}/companyinfo/{realm_id}"
 
-        logger.info(f"Making API request to: {url}")
-
-        # Prepare headers
-        headers = {
-            "Authorization": f"Bearer {auth_token}",
-            "Accept": "application/json",
-        }
-
-        # Make the API request
+        # API request
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, headers=headers) as response:
-                status = response.status
-                logger.info(f"QuickBooks API response status: {status}")
-
-                if status == 200:
-                    resp_text = await response.text()
-                    logger.info(
-                        f"Response body: {resp_text[:100]}..."
-                    )  # Log the first 100 chars
-
-                    company_data = await response.json()
-                    logger.info(f"Company data keys: {list(company_data.keys())}")
-
-                    # Extract company name from the response
-                    company_info = company_data.get("CompanyInfo", {})
-                    logger.info(
-                        f"CompanyInfo keys: {list(company_info.keys()) if company_info else 'None'}"
-                    )
-
-                    company_name = company_info.get("CompanyName", "")
-
-                    if not company_name:
-                        logger.warning("Company name not found in QuickBooks response")
-                        return {
-                            "company_name": "Company Name Not Found",
-                            "error": "Name field missing in response",
-                        }
-
-                    logger.info(f"Retrieved company name: {company_name}")
-                    return {"company_name": company_name}
-                else:
-                    error_text = await response.text()
-                    logger.error(
-                        f"Error fetching company info: HTTP {status} - {error_text}"
-                    )
+            async with session.get(
+                url,
+                headers={
+                    "Authorization": f"Bearer {auth_token}",
+                    "Accept": "application/json",
+                },
+            ) as response:
+                if response.status == 200:
+                    data = await response.json()
                     return {
-                        "company_name": "Error Retrieving Company Name",
-                        "error": f"HTTP {status}: {error_text[:100]}...",
+                        "company_name": data.get("CompanyInfo", {}).get(
+                            "CompanyName", "Name Not Found"
+                        )
+                    }
+                else:
+                    return {
+                        "company_name": f"API Error: {response.status}",
+                        "error": await response.text(),
                     }
     except Exception as e:
-        error_detail = traceback.format_exc()
-        logger.error(f"Exception in get_company_name: {str(e)}\n{error_detail}")
-        return {
-            "company_name": "Exception Occurred",
-            "error": str(e),
-            "error_type": type(e).__name__,
-        }
+        return {"company_name": f"Exception: {type(e).__name__}", "error": str(e)}

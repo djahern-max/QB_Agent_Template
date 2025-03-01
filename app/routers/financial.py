@@ -101,26 +101,45 @@ async def get_balance_sheet(
     qb_service: QuickBooksService = Depends(get_quickbooks_service),
 ):
     try:
-        # Use today's date if not provided
+        # Use specific date if provided, otherwise use current date
         target_date = as_of_date or datetime.now().strftime("%Y-%m-%d")
 
-        # Log what we're about to request
-        logger.debug(
+        # Log what we're requesting
+        logger.info(
             f"Getting balance sheet for realm_id={realm_id}, as_of={target_date}"
         )
 
-        # Make the API request with specific parameters for balance sheet
-        return await qb_service.get_report(
-            realm_id=realm_id,
-            report_type="BalanceSheet",
-            params={
-                "as_of": target_date,
-                "date_macro": None,  # Setting to None to override any default
-                "accounting_method": "Accrual",
-                "columns": "singlecolumn",  # Request a single column report
-                "minorversion": "75",
-            },
+        # Use start_date and end_date which appears to work better than as_of
+        params = {
+            "start_date": target_date,
+            "end_date": target_date,
+            "accounting_method": "Accrual",
+            "minorversion": "75",
+        }
+
+        # Make sure we're removing any existing date_macro parameter
+        params.pop("date_macro", None)
+
+        result = await qb_service.get_report(
+            realm_id=realm_id, report_type="BalanceSheet", params=params
         )
+
+        # Check if the result has dates different than what we requested
+        # and log a warning if they don't match
+        if result and "Header" in result:
+            header = result["Header"]
+            if "StartPeriod" in header and "EndPeriod" in header:
+                if (
+                    header["StartPeriod"] != target_date
+                    or header["EndPeriod"] != target_date
+                ):
+                    logger.warning(
+                        f"Requested balance sheet for {target_date} but got date range "
+                        f"from {header['StartPeriod']} to {header['EndPeriod']}"
+                    )
+
+        return result
+
     except Exception as e:
         logger.error(f"Balance sheet error: {str(e)}")
         raise HTTPException(

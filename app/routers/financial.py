@@ -435,7 +435,7 @@ async def check_current_connection(db: Session = Depends(get_db)):
 async def get_company_name(
     realm_id: str, qb_service: QuickBooksService = Depends(get_quickbooks_service)
 ):
-    """Get just the company name for a QuickBooks connection"""
+    """Get the company name for a QuickBooks connection"""
     try:
         # Get access token for this realm
         auth_token = await qb_service._get_access_token(realm_id)
@@ -443,6 +443,9 @@ async def get_company_name(
         # Use production URL
         base_url = "https://quickbooks.api.intuit.com"
         url = f"{base_url}/v3/company/{realm_id}/companyinfo/{realm_id}"
+
+        # Log the request for debugging
+        logger.debug(f"Requesting company info from {url}")
 
         # Prepare headers
         headers = {
@@ -453,17 +456,34 @@ async def get_company_name(
         # Make the API request
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=headers) as response:
+                logger.debug(f"QuickBooks API response status: {response.status}")
+
                 if response.status == 200:
                     company_data = await response.json()
+                    logger.debug(f"Company data response: {company_data.keys()}")
+
+                    # Extract company name from the response
                     company_name = company_data.get("CompanyInfo", {}).get(
-                        "CompanyName", "Your Company"
+                        "CompanyName", ""
                     )
+
+                    if not company_name:
+                        logger.warning("Company name not found in QuickBooks response")
+                        company_name = "Unknown Company"
+
+                    logger.info(f"Retrieved company name: {company_name}")
                     return {"company_name": company_name}
                 else:
                     error_text = await response.text()
+                    logger.error(
+                        f"Error fetching company info: HTTP {response.status} - {error_text}"
+                    )
                     raise HTTPException(
                         status_code=response.status,
-                        detail=f"Error fetching company name: {error_text}",
+                        detail=f"Error fetching company info: {error_text}",
                     )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.exception(f"Exception in get_company_name: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error retrieving company name: {str(e)}"
+        )

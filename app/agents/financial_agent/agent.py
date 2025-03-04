@@ -689,6 +689,97 @@ class FinancialAnalysisAgent:
             "recommendations": ["Please retry the analysis or contact support."],
         }
 
+    def _format_bs_for_analysis(self, balance_sheet_data: Dict) -> str:
+        """Format Balance Sheet data for GPT analysis"""
+        formatted_lines = []
+
+        try:
+            # Header information
+            header = balance_sheet_data.get("Header", {})
+            formatted_lines.append(f"As of date: {header.get('EndPeriod', 'N/A')}")
+            formatted_lines.append(f"Basis: {header.get('ReportBasis', 'N/A')}")
+            formatted_lines.append("")
+
+            # Process rows - general approach
+            rows = balance_sheet_data.get("Rows", {}).get("Row", [])
+
+            if not rows:
+                formatted_lines.append(
+                    "## NOTE: This balance sheet appears to be empty or contains insufficient data."
+                )
+                return "\n".join(formatted_lines)
+
+            # First pass: look for ASSETS and LIABILITIES AND EQUITY sections
+            for row in rows:
+                header_data = row.get("Header", {}).get("ColData", [])
+                section_name = header_data[0].get("value", "") if header_data else ""
+
+                if section_name == "ASSETS":
+                    formatted_lines.append("## ASSETS")
+                    self._process_bs_section(row, formatted_lines)
+                elif section_name == "LIABILITIES AND EQUITY":
+                    formatted_lines.append("## LIABILITIES AND EQUITY")
+                    self._process_bs_section(row, formatted_lines)
+
+            # If we have too little data, add a note
+            if len(formatted_lines) < 5:
+                formatted_lines.append(
+                    "## NOTE: Limited balance sheet data available for analysis."
+                )
+
+        except Exception as e:
+            formatted_lines.append(
+                f"## ERROR: Failed to format balance sheet: {str(e)}"
+            )
+            formatted_lines.append(
+                "The balance sheet data may be incomplete or in an unexpected format."
+            )
+
+        return "\n".join(formatted_lines)
+
+    def _process_bs_section(self, section, formatted_lines):
+        """Process a balance sheet section (ASSETS or LIABILITIES AND EQUITY)"""
+        # Process subsections if they exist
+        if "Rows" in section and "Row" in section.get("Rows", {}):
+            for subsection in section.get("Rows", {}).get("Row", []):
+                header_data = subsection.get("Header", {}).get("ColData", [])
+                subsection_name = header_data[0].get("value", "") if header_data else ""
+
+                if subsection_name:
+                    formatted_lines.append(f"### {subsection_name}")
+
+                # Process items in the subsection
+                if "Rows" in subsection and "Row" in subsection.get("Rows", {}):
+                    for item in subsection.get("Rows", {}).get("Row", []):
+                        if "ColData" in item:
+                            col_data = item.get("ColData", [])
+                            if len(col_data) >= 2:
+                                name = col_data[0].get("value", "Unknown")
+                                amount = col_data[1].get("value", "0.00")
+                                formatted_lines.append(f"- {name}: ${amount}")
+
+                # Add subsection summary if available
+                summary = subsection.get("Summary", {})
+                if summary and "ColData" in summary:
+                    col_data = summary.get("ColData", [])
+                    if len(col_data) >= 2:
+                        label = col_data[0].get("value", "Total")
+                        value = col_data[1].get("value", "0.00")
+                        formatted_lines.append(f"**{label}**: ${value}")
+
+                formatted_lines.append("")
+
+        # Add section summary if available
+        summary = section.get("Summary", {})
+        if summary and "ColData" in summary:
+            col_data = summary.get("ColData", [])
+            if len(col_data) >= 2:
+                label = col_data[0].get("value", "Total")
+                value = col_data[1].get("value", "0.00")
+                formatted_lines.append(f"**{label}**: ${value}")
+
+        formatted_lines.append("")
+
     async def analyze_balance_sheet(self, balance_sheet_data: Dict) -> Dict:
         """
         Analyze balance sheet with GPT-3.5-turbo

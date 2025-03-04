@@ -19,7 +19,7 @@ class FinancialAnalysisAgent:
 
     async def analyze_accounts(self, accounts_data: Dict) -> Dict:
         """
-        Analyze chart of accounts data with GPT-4
+        Analyze chart of accounts data with GPT-3.5-turbo
 
         Parameters:
         - accounts_data: Dictionary containing the chart of accounts from QuickBooks
@@ -31,7 +31,7 @@ class FinancialAnalysisAgent:
             # Format accounts data for the prompt
             accounts_summary = self._format_accounts_for_analysis(accounts_data)
 
-            # Create prompt for GPT-4
+            # Create prompt for GPT-3.5
             prompt = f"""
             As a financial analyst, review the following chart of accounts and provide insights:
             
@@ -70,11 +70,11 @@ class FinancialAnalysisAgent:
 
             # Call OpenAI API
             response = self.client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-3.5-turbo",
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are a financial analysis AI specialized in providing insights from accounting data.",
+                        "content": "You are a financial analysis AI specialized in providing insights from accounting data. Always respond with valid JSON.",
                     },
                     {"role": "user", "content": prompt},
                 ],
@@ -90,10 +90,14 @@ class FinancialAnalysisAgent:
                 analysis = json.loads(response_content)
                 return analysis
             except json.JSONDecodeError:
-                return {
-                    "error": "Could not parse GPT response as JSON",
-                    "raw_response": response_content,
-                }
+                # Use our helper function to extract JSON
+                analysis = self.extract_json_from_text(response_content)
+                if not analysis:
+                    return {
+                        "error": "Could not parse GPT response as JSON",
+                        "raw_response": response_content,
+                    }
+                return analysis
 
         except Exception as e:
             return {"error": f"Analysis failed: {str(e)}"}
@@ -128,7 +132,7 @@ class FinancialAnalysisAgent:
 
             # Call OpenAI API
             response = self.client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-3.5-turbo",
                 messages=[
                     {
                         "role": "system",
@@ -188,7 +192,8 @@ class FinancialAnalysisAgent:
             # Format accounts data for the prompt
             accounts_summary = self._format_accounts_for_analysis(accounts_data)
 
-            # Create prompt for GPT-4
+            # Create prompt for GPT-3.5
+            # Break down the complex task into simpler parts for GPT-3.5
             prompt = f"""
             As a financial analyst specialized in cash flow management, review the following chart of accounts and provide a 90-day cash flow forecast:
             
@@ -197,9 +202,9 @@ class FinancialAnalysisAgent:
             
             Based on this financial data, please provide:
             1. A 90-day cash flow forecast broken down by month (next 3 months)
-            2. Key factors that will likely impact cash flow in the next 90 days
+            2. Three key factors that will likely impact cash flow
             3. Three actionable recommendations to improve cash flow
-            4. Potential cash flow risks to be aware of
+            4. Two potential cash flow risks to be aware of
             
             Format your response as JSON with the following structure:
             {{
@@ -224,9 +229,25 @@ class FinancialAnalysisAgent:
                     {{
                         "title": "Brief Title",
                         "description": "Detailed explanation"
+                    }},
+                    {{
+                        "title": "Brief Title",
+                        "description": "Detailed explanation"
+                    }},
+                    {{
+                        "title": "Brief Title",
+                        "description": "Detailed explanation"
                     }}
                 ],
                 "recommendations": [
+                    {{
+                        "title": "Brief Title",
+                        "description": "Detailed explanation"
+                    }},
+                    {{
+                        "title": "Brief Title",
+                        "description": "Detailed explanation"
+                    }},
                     {{
                         "title": "Brief Title",
                         "description": "Detailed explanation"
@@ -236,18 +257,24 @@ class FinancialAnalysisAgent:
                     {{
                         "title": "Brief Title",
                         "description": "Detailed explanation"
+                    }},
+                    {{
+                        "title": "Brief Title",
+                        "description": "Detailed explanation"
                     }}
                 ]
             }}
+            
+            IMPORTANT: Your response must be valid JSON that can be parsed. Do not include any text outside the JSON structure.
             """
 
             # Call OpenAI API
             response = self.client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-3.5-turbo",
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are a financial analysis AI specialized in cash flow forecasting and management.",
+                        "content": "You are a financial analysis AI specialized in cash flow forecasting and management. Always respond with valid JSON.",
                     },
                     {"role": "user", "content": prompt},
                 ],
@@ -263,17 +290,21 @@ class FinancialAnalysisAgent:
                 forecast = json.loads(response_content)
                 return forecast
             except json.JSONDecodeError:
-                return {
-                    "error": "Could not parse GPT response as JSON",
-                    "raw_response": response_content,
-                }
+                # Use our helper function to extract JSON
+                forecast = self.extract_json_from_text(response_content)
+                if not forecast:
+                    return {
+                        "error": "Could not parse GPT response as JSON",
+                        "raw_response": response_content,
+                    }
+                return forecast
 
         except Exception as e:
             return {"error": f"Forecasting failed: {str(e)}"}
 
     async def analyze_profit_loss(self, profit_loss_data: Dict) -> Dict:
         """
-        Analyze profit & loss statement with GPT-4
+        Analyze profit & loss statement with GPT-3.5-turbo
 
         Parameters:
         - profit_loss_data: Dictionary containing the P&L data from QuickBooks
@@ -285,14 +316,14 @@ class FinancialAnalysisAgent:
             # Format the data for the prompt
             pl_summary = self._format_pl_for_analysis(profit_loss_data)
 
-            # Create prompt for GPT-4
+            # Simplified prompt for GPT-3.5 with more direct instructions
             prompt = f"""
             As a financial analyst, review the following Profit & Loss statement and provide insights:
             
             # Profit & Loss Statement
             {pl_summary}
             
-            Please provide:
+            Based on the data above, please provide:
             1. A concise summary of the financial position (2-3 sentences)
             2. 5 key insights about the data, focusing on revenue, expenses, and profitability
             3. 3 actionable recommendations based on this P&L statement
@@ -313,15 +344,17 @@ class FinancialAnalysisAgent:
                     "Recommendation 3"
                 ]
             }}
+
+            IMPORTANT: Your response must be valid JSON that can be parsed. Do not include any text outside the JSON structure.
             """
 
             # Call OpenAI API
             response = self.client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-3.5-turbo",
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are a financial analysis AI specialized in providing insights from financial statements.",
+                        "content": "You are a financial analysis AI specialized in providing insights from financial statements. Always respond with valid JSON.",
                     },
                     {"role": "user", "content": prompt},
                 ],
@@ -333,16 +366,36 @@ class FinancialAnalysisAgent:
             response_content = response.choices[0].message.content
 
             try:
+                # Try to parse as JSON first
                 analysis = json.loads(response_content)
                 return analysis
             except json.JSONDecodeError:
-                return {
-                    "error": "Could not parse GPT response as JSON",
-                    "raw_response": response_content,
-                }
+                # Use our helper function to extract JSON
+                analysis = self.extract_json_from_text(response_content)
+
+                # If we still couldn't parse JSON, create a fallback
+                if not analysis:
+                    return {
+                        "error": "Could not parse GPT response as JSON",
+                        "summary": "Analysis completed, but results need manual review.",
+                        "insights": [
+                            "Raw analysis needs to be reviewed by a human analyst."
+                        ],
+                        "recommendations": [
+                            "Try again with a different report format."
+                        ],
+                        "raw_response": response_content[:1000],
+                    }
+
+                return analysis
 
         except Exception as e:
-            return {"error": f"Analysis failed: {str(e)}"}
+            return {
+                "error": f"Analysis failed: {str(e)}",
+                "summary": "An error occurred during analysis.",
+                "insights": [],
+                "recommendations": ["Please try again later."],
+            }
 
     def _format_pl_for_analysis(self, profit_loss_data: Dict) -> str:
         """Format P&L data for GPT analysis"""
@@ -406,56 +459,9 @@ class FinancialAnalysisAgent:
 
         return "\n".join(formatted_lines)
 
-    def _format_bs_for_analysis(self, balance_sheet_data: Dict) -> str:
-        """Format Balance Sheet data for GPT analysis"""
-        # Extract relevant information
-        formatted_lines = []
-
-        # Header information
-        header = balance_sheet_data.get("Header", {})
-        formatted_lines.append(f"As of date: {header.get('EndPeriod', 'N/A')}")
-        formatted_lines.append(f"Basis: {header.get('ReportBasis', 'N/A')}")
-        formatted_lines.append("")
-
-        # Process rows
-        rows = balance_sheet_data.get("Rows", {}).get("Row", [])
-
-        # Extract key sections
-        for row in rows:
-            group = row.get("group", "")
-            summary = row.get("Summary", {})
-
-            if group in ["Assets", "Liabilities", "Equity"]:
-                # Add section header
-                if group == "Assets":
-                    formatted_lines.append("## ASSETS")
-                elif group == "Liabilities":
-                    formatted_lines.append("## LIABILITIES")
-                elif group == "Equity":
-                    formatted_lines.append("## EQUITY")
-
-                # Add details if this is a section with rows
-                if "Rows" in row and "Row" in row["Rows"]:
-                    for detail in row["Rows"]["Row"]:
-                        if detail.get("type") == "Data" and "ColData" in detail:
-                            name = detail["ColData"][0].get("value", "Unknown")
-                            amount = detail["ColData"][1].get("value", "0.00")
-                            formatted_lines.append(f"{name}: {amount}")
-
-                # Add summary line
-                if summary and "ColData" in summary:
-                    label = summary["ColData"][0].get("value", "Total")
-                    value = summary["ColData"][1].get("value", "0.00")
-                    formatted_lines.append(f"{label}: {value}")
-
-                # Add spacing between sections
-                formatted_lines.append("")
-
-        return "\n".join(formatted_lines)
-
     async def analyze_cash_flow(self, cash_flow_data: Dict) -> Dict:
         """
-        Analyze cash flow statement with GPT-4
+        Analyze cash flow statement with GPT-3.5-turbo
         """
         try:
             # First validate the data structure
@@ -479,7 +485,7 @@ class FinancialAnalysisAgent:
             # Format the data for the prompt
             cf_summary = self._format_cf_for_analysis(cash_flow_data)
 
-            # Create prompt for GPT-4
+            # Simplified prompt for GPT-3.5
             prompt = f"""
             As a financial analyst, review the following Cash Flow statement and provide insights:
             
@@ -487,13 +493,13 @@ class FinancialAnalysisAgent:
             {cf_summary}
             
             Please provide:
-            1. A concise summary of the cash position (2-3 sentences)
-            2. 5 key insights about the cash flow, focusing on operating, investing, and financing activities
+            1. A summary of the cash position (2-3 sentences)
+            2. 5 specific insights about cash flow, focusing on operating, investing, and financing activities
             3. 3 actionable recommendations to improve cash flow
             
             Format your response as JSON with the following structure:
             {{
-                "summary": "Overall cash flow summary in 2-3 sentences",
+                "summary": "Cash flow summary in 2-3 sentences",
                 "insights": [
                     "Insight 1",
                     "Insight 2",
@@ -508,16 +514,16 @@ class FinancialAnalysisAgent:
                 ]
             }}
 
-            IMPORTANT: Response must be valid JSON that can be parsed. Do not include any explanatory text outside the JSON structure.
+            IMPORTANT: Your response MUST be valid JSON that can be parsed. Do not include any text outside the JSON structure.
             """
 
             # Call OpenAI API
             response = self.client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-3.5-turbo",
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are a financial analysis AI specialized in providing insights from financial statements. Always reply with valid JSON.",
+                        "content": "You are a financial analysis AI specialized in cash flow analysis. Always respond with valid JSON.",
                     },
                     {"role": "user", "content": prompt},
                 ],
@@ -527,7 +533,6 @@ class FinancialAnalysisAgent:
 
             # Extract and parse response
             response_content = response.choices[0].message.content
-            print(f"Cash Flow GPT response: {response_content[:200]}...")
 
             try:
                 # Try to parse as JSON first
@@ -683,120 +688,9 @@ class FinancialAnalysisAgent:
             "recommendations": ["Please retry the analysis or contact support."],
         }
 
-    # Then modify the analyze_profit_loss method
-    async def analyze_profit_loss(self, profit_loss_data: Dict) -> Dict:
-        """
-        Analyze profit & loss statement with GPT-4
-
-        Parameters:
-        - profit_loss_data: Dictionary containing the P&L data from QuickBooks
-
-        Returns:
-        - Dictionary containing the analysis
-        """
-        try:
-            # Format the data for the prompt
-            pl_summary = self._format_pl_for_analysis(profit_loss_data)
-
-            # Create prompt for GPT-4
-            prompt = f"""
-            As a financial analyst, review the following Profit & Loss statement and provide insights:
-            
-            # Profit & Loss Statement
-            {pl_summary}
-            
-            Based on the detailed line items and totals above, please provide:
-            1. A concise summary of the financial position (2-3 sentences)
-            2. 5 key insights about the data, focusing on:
-            - Revenue mix and concentration (examine each revenue stream)
-            - Expense patterns and efficiency
-            - Gross margin and profitability metrics
-            - Any unusual patterns or outliers
-            - Overall business financial health
-
-            3. 3 actionable recommendations based on this P&L statement, considering:
-            - The business's technology focus
-            - Revenue diversification opportunities
-            - Expense management and efficiency improvements
-            - Growth opportunities based on the highest-performing revenue streams
-
-            Format your response as JSON with the following structure:
-            {{
-                "summary": "Overall financial summary in 2-3 sentences",
-                "insights": [
-                    "Specific insight 1 about revenue streams and their relative contribution",
-                    "Specific insight 2 about expense patterns and areas of concern",
-                    "Specific insight 3 about profitability metrics compared to industry standards",
-                    "Specific insight 4 about potential growth opportunities based on performance",
-                    "Specific insight 5 about overall financial health and risk assessment"
-                ],
-                "recommendations": [
-                    "Specific recommendation 1 with clear actionable steps",
-                    "Specific recommendation 2 with clear actionable steps",
-                    "Specific recommendation 3 with clear actionable steps"
-                ]
-            }}
-
-            IMPORTANT: Response must be valid JSON that can be parsed. Do not include any explanatory text outside the JSON structure.
-            """
-
-            # Call OpenAI API
-            response = self.client.chat.completions.create(
-                model="gpt-4",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "You are a financial analysis AI specialized in providing insights from financial statements. Always reply with valid JSON.",
-                    },
-                    {"role": "user", "content": prompt},
-                ],
-                temperature=0.2,
-                max_tokens=1000,
-            )
-
-            # Extract response
-            response_content = response.choices[0].message.content
-
-            try:
-                # Try to parse as JSON first
-                analysis = json.loads(response_content)
-                return analysis
-            except json.JSONDecodeError:
-                # Use our helper function to extract JSON
-                # Use our helper function to extract JSON
-                analysis = self.extract_json_from_text(
-                    response_content
-                )  # CORRECT - with 'self'
-
-                # If we still couldn't parse JSON, create a fallback
-                if not analysis:
-                    return {
-                        "error": "Could not parse GPT response as JSON",
-                        "summary": "Analysis completed, but results need manual review.",
-                        "insights": [
-                            "Raw analysis needs to be reviewed by a human analyst."
-                        ],
-                        "recommendations": [
-                            "Try again with a different report format."
-                        ],
-                        "raw_response": response_content[
-                            :1000
-                        ],  # Limiting to first 1000 chars
-                    }
-
-                return analysis
-
-        except Exception as e:
-            return {
-                "error": f"Analysis failed: {str(e)}",
-                "summary": "An error occurred during analysis.",
-                "insights": [],
-                "recommendations": ["Please try again later."],
-            }
-
     async def analyze_balance_sheet(self, balance_sheet_data: Dict) -> Dict:
         """
-        Analyze balance sheet with GPT-4
+        Analyze balance sheet with GPT-3.5-turbo
         """
         try:
             # First validate the data structure
@@ -820,7 +714,7 @@ class FinancialAnalysisAgent:
             # Format the data for the prompt
             bs_summary = self._format_bs_for_analysis(balance_sheet_data)
 
-            # Create prompt for GPT-4 (keep your existing prompt)
+            # Simplified prompt for GPT-3.5
             prompt = f"""
             As a financial analyst, review the following Balance Sheet and provide insights:
             
@@ -849,16 +743,16 @@ class FinancialAnalysisAgent:
                 ]
             }}
 
-            IMPORTANT: Response must be valid JSON that can be parsed. Do not include any explanatory text outside the JSON structure.
+            IMPORTANT: Your response MUST be valid JSON. Do not include any text outside the JSON structure.
             """
 
             # Call OpenAI API
             response = self.client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-3.5-turbo",
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are a financial analysis AI specialized in providing insights from financial statements. Always reply with valid JSON.",
+                        "content": "You are a financial analysis AI specialized in balance sheet analysis. Always respond with valid JSON.",
                     },
                     {"role": "user", "content": prompt},
                 ],
@@ -868,7 +762,6 @@ class FinancialAnalysisAgent:
 
             # Extract and parse response
             response_content = response.choices[0].message.content
-            print(f"Balance Sheet GPT response: {response_content[:200]}...")
 
             try:
                 # Try to parse as JSON first
@@ -904,94 +797,3 @@ class FinancialAnalysisAgent:
                 "insights": [],
                 "recommendations": ["Please try again later."],
             }
-
-    def _format_bs_for_analysis(self, balance_sheet_data: Dict) -> str:
-        """Format Balance Sheet data for GPT analysis"""
-        formatted_lines = []
-
-        try:
-            # Header information
-            header = balance_sheet_data.get("Header", {})
-            formatted_lines.append(f"As of date: {header.get('EndPeriod', 'N/A')}")
-            formatted_lines.append(f"Basis: {header.get('ReportBasis', 'N/A')}")
-            formatted_lines.append("")
-
-            # Process rows - general approach
-            rows = balance_sheet_data.get("Rows", {}).get("Row", [])
-
-            if not rows:
-                formatted_lines.append(
-                    "## NOTE: This balance sheet appears to be empty or contains insufficient data."
-                )
-                return "\n".join(formatted_lines)
-
-            # First pass: look for ASSETS and LIABILITIES AND EQUITY sections
-            for row in rows:
-                header_data = row.get("Header", {}).get("ColData", [])
-                section_name = header_data[0].get("value", "") if header_data else ""
-
-                if section_name == "ASSETS":
-                    formatted_lines.append("## ASSETS")
-                    self._process_bs_section(row, formatted_lines)
-                elif section_name == "LIABILITIES AND EQUITY":
-                    formatted_lines.append("## LIABILITIES AND EQUITY")
-                    self._process_bs_section(row, formatted_lines)
-
-        except Exception as e:
-            formatted_lines.append(
-                f"## ERROR: Failed to format balance sheet: {str(e)}"
-            )
-            formatted_lines.append(
-                "The balance sheet data may be incomplete or in an unexpected format."
-            )
-
-        # If we have too little data, add a note
-        if len(formatted_lines) < 5:
-            formatted_lines.append(
-                "## NOTE: Limited balance sheet data available for analysis."
-            )
-
-        return "\n".join(formatted_lines)
-
-    def _process_bs_section(self, section, formatted_lines):
-        """Process a balance sheet section (ASSETS or LIABILITIES AND EQUITY)"""
-        # Process subsections if they exist
-        if "Rows" in section and "Row" in section.get("Rows", {}):
-            for subsection in section.get("Rows", {}).get("Row", []):
-                header_data = subsection.get("Header", {}).get("ColData", [])
-                subsection_name = header_data[0].get("value", "") if header_data else ""
-
-                if subsection_name:
-                    formatted_lines.append(f"### {subsection_name}")
-
-                # Process items in the subsection
-                if "Rows" in subsection and "Row" in subsection.get("Rows", {}):
-                    for item in subsection.get("Rows", {}).get("Row", []):
-                        if "ColData" in item:
-                            col_data = item.get("ColData", [])
-                            if len(col_data) >= 2:
-                                name = col_data[0].get("value", "Unknown")
-                                amount = col_data[1].get("value", "0.00")
-                                formatted_lines.append(f"- {name}: ${amount}")
-
-                # Add subsection summary if available
-                summary = subsection.get("Summary", {})
-                if summary and "ColData" in summary:
-                    col_data = summary.get("ColData", [])
-                    if len(col_data) >= 2:
-                        label = col_data[0].get("value", "Total")
-                        value = col_data[1].get("value", "0.00")
-                        formatted_lines.append(f"**{label}**: ${value}")
-
-                formatted_lines.append("")
-
-        # Add section summary if available
-        summary = section.get("Summary", {})
-        if summary and "ColData" in summary:
-            col_data = summary.get("ColData", [])
-            if len(col_data) >= 2:
-                label = col_data[0].get("value", "Total")
-                value = col_data[1].get("value", "0.00")
-                formatted_lines.append(f"**{label}**: ${value}")
-
-        formatted_lines.append("")

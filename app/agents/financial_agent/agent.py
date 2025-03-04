@@ -874,6 +874,7 @@ class FinancialAnalysisAgent:
                             "Try again with a different report format."
                         ],
                     }
+                analysis = json.loads(response_content)
                 analysis["model_used"] = model_test["reported_model"]
                 return analysis
 

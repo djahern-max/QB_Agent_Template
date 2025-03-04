@@ -7,6 +7,7 @@ from openai import OpenAI
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
+
 from ...database import get_db
 
 
@@ -693,6 +694,11 @@ class FinancialAnalysisAgent:
         Analyze balance sheet with GPT-3.5-turbo
         """
         try:
+            # First, verify which model we're using
+            model_test = await self.test_model_in_use()
+            print(f"Using model: {model_test['reported_model']}")
+            print(f"Model response: {model_test['response']}")
+
             # First validate the data structure
             if not balance_sheet_data or not isinstance(balance_sheet_data, dict):
                 return {
@@ -700,15 +706,9 @@ class FinancialAnalysisAgent:
                     "summary": "The provided data is not in the expected format.",
                     "insights": [],
                     "recommendations": [],
-                }
-
-            # Verify required fields
-            if "Header" not in balance_sheet_data or "Rows" not in balance_sheet_data:
-                return {
-                    "error": "Missing required data fields",
-                    "summary": "The balance sheet data is missing required fields.",
-                    "insights": [],
-                    "recommendations": [],
+                    "model_used": model_test[
+                        "reported_model"
+                    ],  # Include model info in response
                 }
 
             # Format the data for the prompt
@@ -783,7 +783,7 @@ class FinancialAnalysisAgent:
                             "Try again with a different report format."
                         ],
                     }
-
+                analysis["model_used"] = model_test["reported_model"]
                 return analysis
 
         except Exception as e:
@@ -796,4 +796,20 @@ class FinancialAnalysisAgent:
                 "summary": "An error occurred during analysis.",
                 "insights": [],
                 "recommendations": ["Please try again later."],
+                "model_used": (
+                    model_test["reported_model"]
+                    if "model_test" in locals()
+                    else "unknown"
+                ),
             }
+
+    async def test_model_in_use(self):
+        """Verify which model is actually being used"""
+        response = self.client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": "Say 'I am GPT-3.5'"}],
+            temperature=0.0,
+        )
+        model_used = response.model
+        content = response.choices[0].message.content
+        return {"reported_model": model_used, "response": content}

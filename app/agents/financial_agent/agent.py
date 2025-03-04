@@ -98,7 +98,7 @@ class FinancialAnalysisAgent:
                         "error": "Could not parse GPT response as JSON",
                         "raw_response": response_content,
                     }
-                return analysis
+                return analysis  # Return extracted JSON
 
         except Exception as e:
             return {"error": f"Analysis failed: {str(e)}"}
@@ -790,6 +790,9 @@ class FinancialAnalysisAgent:
             print(f"Using model: {model_test['reported_model']}")
             print(f"Model response: {model_test['response']}")
 
+            # Store model info to use later
+            model_name = model_test["reported_model"]
+
             # First validate the data structure
             if not balance_sheet_data or not isinstance(balance_sheet_data, dict):
                 return {
@@ -797,9 +800,7 @@ class FinancialAnalysisAgent:
                     "summary": "The provided data is not in the expected format.",
                     "insights": [],
                     "recommendations": [],
-                    "model_used": model_test[
-                        "reported_model"
-                    ],  # Include model info in response
+                    "model_used": model_name,
                 }
 
             # Format the data for the prompt
@@ -857,6 +858,7 @@ class FinancialAnalysisAgent:
             try:
                 # Try to parse as JSON first
                 analysis = json.loads(response_content)
+                analysis["model_used"] = model_name
                 return analysis
             except json.JSONDecodeError:
                 # Use our helper function to extract JSON
@@ -873,9 +875,11 @@ class FinancialAnalysisAgent:
                         "recommendations": [
                             "Try again with a different report format."
                         ],
+                        "model_used": model_name,
                     }
-                analysis = json.loads(response_content)
-                analysis["model_used"] = model_test["reported_model"]
+
+                # Add model info to the extracted JSON
+                analysis["model_used"] = model_name
                 return analysis
 
         except Exception as e:
@@ -883,16 +887,18 @@ class FinancialAnalysisAgent:
 
             print(f"Balance Sheet analysis error: {str(e)}")
             print(traceback.format_exc())
+
+            # In case of an error, try to include the model info if we got that far
+            model_name = (
+                model_test["reported_model"] if "model_test" in locals() else "unknown"
+            )
+
             return {
                 "error": f"Analysis failed: {str(e)}",
                 "summary": "An error occurred during analysis.",
                 "insights": [],
                 "recommendations": ["Please try again later."],
-                "model_used": (
-                    model_test["reported_model"]
-                    if "model_test" in locals()
-                    else "unknown"
-                ),
+                "model_used": model_name,
             }
 
     async def test_model_in_use(self):
